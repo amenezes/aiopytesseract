@@ -1,0 +1,10 @@
+-r requirements.txt
+mypy
+black
+flake8
+isort
+types-aiofiles
+build
+pytest
+pytest-cov
+pytest-asyncio
