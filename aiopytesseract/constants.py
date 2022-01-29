@@ -1,5 +1,7 @@
 import os
 
+from .file_format import FileFormat
+
 TESSERACT_CMD: str = str(os.getenv("TESSERACT_CMD", "tesseract"))
 
 # https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html
@@ -161,3 +163,15 @@ AIOPYTESSERACT_DEFAULT_ENCODING: str = str(
 AIOPYTESSERACT_DEFAULT_TIMEOUT: float = float(
     os.getenv("AIOPYTESSERACT_DEFAULT_TIMEOUT", 30)
 )
+AIOPYTESSERACT_DEFAULT_DPI: int = 200
+AIOPYTESSERACT_DEFAULT_PSM: int = 3
+AIOPYTESSERACT_DEFAULT_OEM: int = 3
+AIOPYTESSERACT_DEFAULT_NICE: int = 0
+
+OUTPUT_FILE_EXTENSIONS = {
+    FileFormat.ALTO: ".xml",
+    FileFormat.HOCR: ".hocr",
+    FileFormat.PDF: ".pdf",
+    FileFormat.TSV: ".tsv",
+    FileFormat.TXT: ".txt",
+}

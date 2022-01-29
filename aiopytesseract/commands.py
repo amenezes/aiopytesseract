@@ -1,15 +1,17 @@
 import shlex
+from contextlib import asynccontextmanager
 from functools import singledispatch
 from typing import Any, List, Optional
 
-try:
-    import PIL
-except ModuleNotFoundError:
-    PIL = None
+from aiofiles import tempfile  # type: ignore
 
-from .base_command import execute, execute_cmd
+from .base_command import execute, execute_cmd, execute_multi_output_cmd
 from .constants import (
+    AIOPYTESSERACT_DEFAULT_DPI,
     AIOPYTESSERACT_DEFAULT_ENCODING,
+    AIOPYTESSERACT_DEFAULT_NICE,
+    AIOPYTESSERACT_DEFAULT_OEM,
+    AIOPYTESSERACT_DEFAULT_PSM,
     AIOPYTESSERACT_DEFAULT_TIMEOUT,
     TESSERACT_LANGUAGES,
 )
@@ -34,7 +36,7 @@ async def get_languages(config: str = "") -> List:
 
 async def tesseract_version() -> str:
     proc = await execute_cmd(["--version"])
-    data = await proc.stdout.readuntil()
+    data: bytes = await proc.stdout.readuntil()
     return data.decode(AIOPYTESSERACT_DEFAULT_ENCODING).split()[1]
 
 
@@ -48,13 +50,25 @@ async def image_to_string(
     image: Any,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
-    dpi: int = 200,
+    dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: Optional[str] = None,
-    psm: int = 3,
-    oem: int = 3,
-    nice: int = 0,
+    psm: int = AIOPYTESSERACT_DEFAULT_PSM,
+    oem: int = AIOPYTESSERACT_DEFAULT_OEM,
+    nice: int = AIOPYTESSERACT_DEFAULT_NICE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ):
+    """Extract string from an image.
+
+    :param image: image input to tesseract. (valid values: str, bytes)
+    :param user_words:
+    :param user_patterns:
+    :param dpi:
+    :param lang:
+    :param psm:
+    :param oem:
+    :param nice:
+    :param timeout:
+    """
     raise NotImplementedError(f"Type {type(image)} not supported.")
 
 
@@ -63,16 +77,16 @@ async def _(
     image: str,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
-    dpi: int = 200,
+    dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: Optional[str] = None,
-    psm: int = 3,
-    oem: int = 3,
-    nice: int = 0,
+    psm: int = AIOPYTESSERACT_DEFAULT_PSM,
+    oem: int = AIOPYTESSERACT_DEFAULT_OEM,
+    nice: int = AIOPYTESSERACT_DEFAULT_NICE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> str:
-    async with execute(
+    image_text: str = await execute(
         image,
-        FileFormat.TXT,
+        FileFormat.STDOUT,
         user_words,
         user_patterns,
         dpi,
@@ -81,8 +95,7 @@ async def _(
         oem,
         nice,
         timeout,
-    ) as output_file:
-        image_text = output_file.read_text(encoding=AIOPYTESSERACT_DEFAULT_ENCODING)
+    )
     return image_text
 
 
@@ -91,16 +104,16 @@ async def _(
     image: bytes,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
-    dpi: int = 200,
+    dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: Optional[str] = None,
-    psm: int = 3,
-    oem: int = 3,
-    nice: int = 0,
+    psm: int = AIOPYTESSERACT_DEFAULT_PSM,
+    oem: int = AIOPYTESSERACT_DEFAULT_OEM,
+    nice: int = AIOPYTESSERACT_DEFAULT_NICE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> str:
-    async with execute(
+    image_text: str = await execute(
         image,
-        FileFormat.TXT,
+        FileFormat.STDOUT,
         user_words,
         user_patterns,
         dpi,
@@ -109,8 +122,7 @@ async def _(
         oem,
         nice,
         timeout,
-    ) as output_file:
-        image_text = output_file.read_text(encoding=AIOPYTESSERACT_DEFAULT_ENCODING)
+    )
     return image_text
 
 
@@ -119,11 +131,11 @@ async def image_to_hocr(
     image: Any,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
-    dpi: int = 200,
+    dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: Optional[str] = None,
-    psm: int = 3,
-    oem: int = 3,
-    nice: int = 0,
+    psm: int = AIOPYTESSERACT_DEFAULT_PSM,
+    oem: int = AIOPYTESSERACT_DEFAULT_OEM,
+    nice: int = AIOPYTESSERACT_DEFAULT_NICE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ):
     raise NotImplementedError
@@ -134,11 +146,11 @@ async def _(
     image: str,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
-    dpi: int = 200,
+    dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: Optional[str] = None,
-    psm: int = 3,
-    oem: int = 3,
-    nice: int = 0,
+    psm: int = AIOPYTESSERACT_DEFAULT_PSM,
+    oem: int = AIOPYTESSERACT_DEFAULT_OEM,
+    nice: int = AIOPYTESSERACT_DEFAULT_NICE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> bytes:
     async with execute(
@@ -161,11 +173,11 @@ async def _(
     image: bytes,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
-    dpi: int = 200,
+    dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: Optional[str] = None,
-    psm: int = 3,
-    oem: int = 3,
-    nice: int = 0,
+    psm: int = AIOPYTESSERACT_DEFAULT_PSM,
+    oem: int = AIOPYTESSERACT_DEFAULT_OEM,
+    nice: int = AIOPYTESSERACT_DEFAULT_NICE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> bytes:
     async with execute(
@@ -185,14 +197,14 @@ async def _(
 
 @singledispatch
 async def image_to_pdf(
-    image: bytes,
+    image: Any,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
-    dpi: int = 200,
+    dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: Optional[str] = None,
-    psm: int = 3,
-    oem: int = 3,
-    nice: int = 0,
+    psm: int = AIOPYTESSERACT_DEFAULT_PSM,
+    oem: int = AIOPYTESSERACT_DEFAULT_OEM,
+    nice: int = AIOPYTESSERACT_DEFAULT_NICE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ):
     raise NotImplementedError
@@ -203,11 +215,11 @@ async def _(
     image: str,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
-    dpi: int = 200,
+    dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: Optional[str] = None,
-    psm: int = 3,
-    oem: int = 3,
-    nice: int = 0,
+    psm: int = AIOPYTESSERACT_DEFAULT_PSM,
+    oem: int = AIOPYTESSERACT_DEFAULT_OEM,
+    nice: int = AIOPYTESSERACT_DEFAULT_NICE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> bytes:
     async with execute(
@@ -230,11 +242,11 @@ async def _(
     image: bytes,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
-    dpi: int = 200,
+    dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: Optional[str] = None,
-    psm: int = 3,
-    oem: int = 3,
-    nice: int = 0,
+    psm: int = AIOPYTESSERACT_DEFAULT_PSM,
+    oem: int = AIOPYTESSERACT_DEFAULT_OEM,
+    nice: int = AIOPYTESSERACT_DEFAULT_NICE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> bytes:
     async with execute(
@@ -262,3 +274,86 @@ async def image_to_data():
 
 async def image_to_osd():
     pass
+
+
+@singledispatch  # type: ignore
+@asynccontextmanager
+async def run(
+    image: Any,
+    output_filename: str,
+    output_format: List[str],
+    user_words: Optional[str] = None,
+    user_patterns: Optional[str] = None,
+    dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
+    lang: Optional[str] = None,
+    psm: int = AIOPYTESSERACT_DEFAULT_PSM,
+    oem: int = AIOPYTESSERACT_DEFAULT_OEM,
+    nice: int = AIOPYTESSERACT_DEFAULT_NICE,
+    timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
+):
+    raise NotImplementedError
+
+
+@run.register(str)
+@asynccontextmanager
+async def _(
+    image: str,
+    output_filename: str,
+    output_format: str,
+    user_words: Optional[str] = None,
+    user_patterns: Optional[str] = None,
+    dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
+    lang: Optional[str] = None,
+    psm: int = AIOPYTESSERACT_DEFAULT_PSM,
+    oem: int = AIOPYTESSERACT_DEFAULT_OEM,
+    nice: int = AIOPYTESSERACT_DEFAULT_NICE,
+    timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
+):
+    async with tempfile.TemporaryDirectory(prefix="aiopytesseract-") as tmpdir:
+        resp = await execute_multi_output_cmd(
+            image,
+            f"{tmpdir}/{output_filename}",
+            output_format,
+            user_words,
+            user_patterns,
+            dpi,
+            lang,
+            psm,
+            oem,
+        )
+        yield resp
+
+
+@run.register(bytes)
+@asynccontextmanager
+async def _(
+    image: bytes,
+    output_filename: str,
+    output_format: str,
+    user_words: Optional[str] = None,
+    user_patterns: Optional[str] = None,
+    dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
+    lang: Optional[str] = None,
+    psm: int = AIOPYTESSERACT_DEFAULT_PSM,
+    oem: int = AIOPYTESSERACT_DEFAULT_OEM,
+    nice: int = AIOPYTESSERACT_DEFAULT_NICE,
+    timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
+):
+    async with tempfile.TemporaryDirectory(prefix="aiopytesseract-") as tmpdir:
+        async with tempfile.NamedTemporaryFile(
+            dir=tmpdir, prefix="aiopytesseract_input_file_"
+        ) as tmpfile:
+            await tmpfile.write(image)
+            await tmpfile.seek(0)
+            resp = await execute_multi_output_cmd(
+                tmpfile.name,
+                f"{tmpdir}/{output_filename}",
+                output_format,
+                user_words,
+                user_patterns,
+                dpi,
+                lang,
+                psm,
+                oem,
+            )
+        yield resp

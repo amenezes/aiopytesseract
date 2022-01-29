@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 import aiopytesseract
@@ -29,12 +31,45 @@ async def test_image_to_string_with_any():
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("image", ["tests/samples/file-sample_150kB.png"])
-async def test_image_to_string_with_path(image):
+async def test_image_to_string_with_str_image(image):
     text = await aiopytesseract.image_to_string(image)
     assert len(text) > 90
 
 
 @pytest.mark.asyncio
-async def test_image_to_string_with_invalid_type():
+@pytest.mark.parametrize("image", ["tests/samples/file-sample_150kB.png"])
+async def test_image_to_string_with_bytes_image(image):
+    text = await aiopytesseract.image_to_string(Path(image).read_bytes())
+    assert len(text) > 90
+
+
+@pytest.mark.asyncio
+async def test_image_to_string_with_invalid():
     with pytest.raises(RuntimeError):
         await aiopytesseract.image_to_string("tests/samples/file-sample_150kB.pdf")
+
+
+@pytest.mark.asyncio
+async def test_run_with_str_image():
+    async with aiopytesseract.run(
+        "tests/samples/file-sample_150kB.png", "output", "txt tsv pdf"
+    ) as resp:
+        txt_file, tsv_file, pdf_file = resp
+        assert len(resp) == 3
+        assert Path(txt_file).exists()
+        assert Path(tsv_file).exists()
+        assert Path(pdf_file).exists()
+
+
+@pytest.mark.asyncio
+async def test_run_with_bytes_image():
+    async with aiopytesseract.run(
+        Path("tests/samples/file-sample_150kB.png").read_bytes(),
+        "output",
+        "txt tsv pdf",
+    ) as resp:
+        txt_file, tsv_file, pdf_file = resp
+        assert len(resp) == 3
+        assert Path(txt_file).exists()
+        assert Path(tsv_file).exists()
+        assert Path(pdf_file).exists()

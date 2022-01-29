@@ -3,9 +3,11 @@ from enum import Enum, unique
 
 @unique
 class FileFormat(str, Enum):
-    TXT: str = "txt"
-    PDF: str = "pdf"
+    ALTO: str = "alto"
     HOCR: str = "hocr"
+    PDF: str = "pdf"
+    TSV: str = "tsv"
+    TXT: str = "txt"
     STDOUT: str = "stdout"
 
     def __str__(self) -> str:

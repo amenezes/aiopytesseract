@@ -4,16 +4,16 @@ from .constants import OCR_ENGINE_MODES, PAGE_SEGMENTATION_MODES
 from .exceptions import NoSuchFileException, OEMInvalidException, PSMInvalidException
 
 
-async def psm_is_valid(psm: int):
+async def psm_is_valid(psm: int) -> None:
     if psm not in PAGE_SEGMENTATION_MODES.keys():
         raise PSMInvalidException
 
 
-async def oem_is_valid(oem: int):
+async def oem_is_valid(oem: int) -> None:
     if oem not in OCR_ENGINE_MODES.keys():
         raise OEMInvalidException
 
 
-async def file_exists(file_path: str):
+async def file_exists(file_path: str) -> None:
     if not Path(file_path).exists():
         raise NoSuchFileException(f"No such file: '{file_path}'")

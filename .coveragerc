@@ -1,0 +1,22 @@
+[run]
+branch = True
+omit = **__init__.py**
+       **__main__.py
+
+[report]
+show_missing = True
+sort = Miss
+precision = 2
+exclude_lines = logging.info
+                logging.debug
+                logging.warn
+                logging.error
+
+[paths]
+source = aiopytesseract/
+
+[html]
+directory = .
+
+[xml]
+output = coverage.xml

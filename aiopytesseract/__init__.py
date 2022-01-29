@@ -5,6 +5,7 @@ from .commands import (
     image_to_pdf,
     image_to_string,
     languages,
+    run,
     tesseract_version,
 )
 
@@ -17,5 +18,6 @@ __all__ = [
     "image_to_string",
     "image_to_pdf",
     "image_to_hocr",
+    "run",
     "__version__",
 ]
