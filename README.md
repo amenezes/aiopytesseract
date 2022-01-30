@@ -77,18 +77,11 @@ await aiopytesseract.image_to_hocr(Path("tests/samples/file-sample_150kB.png")
 
 # multi ouput
 async with aiopytesseract.run(
-	'/home/amenezes/Documents/github/pdfex/test/1.jpeg', 'output', 'alto tsv'
-) as resp:
-	print(resp)
-	alto_file, tsv_file = resp
-
-
-async with aiopytesseract.run(
-	Path('/home/amenezes/Documents/github/pdfex/test/1.jpeg').read_bytes(),
+	Path('tests/samples/file-sample_150kB.png').read_bytes(),
 	'output',
 	'alto tsv txt'
 ) as resp:
-	# will generate (output)
+	# will generate (output.xml, output.tsv and output.txt)
 	print(resp)
 	alto_file, tsv_file, txt_file = resp
 ```
