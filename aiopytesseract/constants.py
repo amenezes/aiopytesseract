@@ -5,7 +5,7 @@ from .file_format import FileFormat
 TESSERACT_CMD: str = str(os.getenv("TESSERACT_CMD", "tesseract"))
 
 # https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html
-TESSERACT_LANGUAGES = (
+TESSERACT_LANGUAGES = {
     "afr",
     "amh",
     "ara",
@@ -130,7 +130,7 @@ TESSERACT_LANGUAGES = (
     "vie",
     "yid",
     "yor",
-)
+}
 
 PAGE_SEGMENTATION_MODES = {
     0: "Orientation and script detection (OSD) only.",

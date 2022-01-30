@@ -16,3 +16,7 @@ class OEMInvalidException(Exception):
 
 class NoSuchFileException(Exception):
     pass
+
+
+class LanguageInvalidException(Exception):
+    pass

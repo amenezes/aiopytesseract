@@ -1,0 +1,38 @@
+name: ci
+
+on: [ push, pull_request ]
+
+jobs:
+  tests:
+    strategy:
+      matrix:
+        python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
+        os: [ubuntu]
+      fail-fast: true
+    runs-on: ${{ matrix.os }}-latest
+    timeout-minutes: 15
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: x64
+    - uses: actions/cache@v2
+      with:
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-dev.txt') }}
+        path: ~/.cache/pip
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    - name: Install Python dependencies
+      uses: py-actions/py-dependency-install@v2
+      with:
+        path: "./requirements-dev.txt"
+    - name: Run lint & tests
+      run: |
+        sudo apt-get install -y tesseract-ocr tesseract-ocr-por
+        make ci SKIP_STYLE=true
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: true

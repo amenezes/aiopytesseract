@@ -12,7 +12,7 @@ from .constants import (
     TESSERACT_CMD,
 )
 from .exceptions import TesseractNotFoundError, TesseractRuntimeError
-from .validators import file_exists, oem_is_valid, psm_is_valid
+from .validators import file_exists, language_is_valid, oem_is_valid, psm_is_valid
 
 
 async def execute_cmd(cmd_args: str):
@@ -169,6 +169,7 @@ async def _build_cmd_args(
         cmd_args.append(user_patterns)
 
     if lang:
+        await language_is_valid(lang)
         cmd_args.append("-l")
         cmd_args.append(lang)
 
