@@ -8,7 +8,6 @@ from typing import Any, List, Optional, Tuple
 from ._logger import logger
 from .constants import (
     AIOPYTESSERACT_DEFAULT_ENCODING,
-    AIOPYTESSERACT_DEFAULT_TIMEOUT,
     OUTPUT_FILE_EXTENSIONS,
     TESSERACT_CMD,
 )
@@ -16,10 +15,12 @@ from .exceptions import TesseractNotFoundError, TesseractRuntimeError
 from .validators import file_exists, oem_is_valid, psm_is_valid
 
 
-async def execute_cmd(cmd_args: List[str]):
+async def execute_cmd(cmd_args: str):
+    logger.debug(f"Command: '{TESSERACT_CMD} {shlex.join(shlex.split(cmd_args))}'")
     proc = await asyncio.create_subprocess_exec(
         TESSERACT_CMD,
-        *cmd_args,
+        *shlex.split(cmd_args),
+        stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
@@ -30,15 +31,14 @@ async def execute_cmd(cmd_args: List[str]):
 async def execute(
     image: Any,
     output_format: str,
+    dpi: int,
+    lang: Optional[str],
+    psm: int,
+    oem: int,
+    timeout: float,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
-    dpi: int = 200,
-    lang: Optional[str] = None,
-    psm: int = 3,
-    oem: int = 3,
-    nice: int = 0,
-    timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-):
+) -> bytes:
     raise NotImplementedError
 
 
@@ -46,27 +46,25 @@ async def execute(
 async def _(
     image: str,
     output_format: str,
+    dpi: int,
+    lang: Optional[str],
+    psm: int,
+    oem: int,
+    timeout: float,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
-    dpi: int = 200,
-    lang: Optional[str] = None,
-    psm: int = 3,
-    oem: int = 3,
-    nice: int = 0,
-    timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> bytes:
     await file_exists(image)
     response: bytes = await execute(
         Path(image).read_bytes(),
         output_format,
-        user_words,
-        user_patterns,
         dpi,
         lang,
         psm,
         oem,
-        nice,
         timeout,
+        user_words,
+        user_patterns,
     )
     return response
 
@@ -75,14 +73,13 @@ async def _(
 async def _(
     image: bytes,
     output_format: str,
+    dpi: int,
+    lang: Optional[str],
+    psm: int,
+    oem: int,
+    timeout: float,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
-    dpi: int = 200,
-    lang: Optional[str] = None,
-    psm: int = 3,
-    oem: int = 3,
-    nice: int = 0,
-    timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> bytes:
     cmd_args = await _build_cmd_args(
         output_extension=output_format,
@@ -113,14 +110,13 @@ async def execute_multi_output_cmd(
     image: bytes,
     output_file: str,
     output_format: str,
+    dpi: int,
+    lang: str,
+    psm: int,
+    oem: int,
+    timeout: float,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
-    dpi: int = 200,
-    lang: Optional[str] = None,
-    psm: int = 3,
-    oem: int = 3,
-    nice: int = 0,
-    timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> Tuple[str, ...]:
     cmd_args = await _build_cmd_args(
         output_extension=output_format,

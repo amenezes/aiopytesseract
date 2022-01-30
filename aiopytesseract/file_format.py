@@ -10,6 +10,7 @@ class FileFormat(str, Enum):
     TXT: str = "txt"
     STDOUT: str = "stdout"
     STDIN: str = "stdin"
+    OSD: str = "osd"
 
     def __str__(self) -> str:
         return str.__str__(self)
