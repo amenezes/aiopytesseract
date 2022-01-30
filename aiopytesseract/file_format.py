@@ -9,6 +9,7 @@ class FileFormat(str, Enum):
     TSV: str = "tsv"
     TXT: str = "txt"
     STDOUT: str = "stdout"
+    STDIN: str = "stdin"
 
     def __str__(self) -> str:
         return str.__str__(self)

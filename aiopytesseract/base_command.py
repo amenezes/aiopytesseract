@@ -2,9 +2,8 @@ import asyncio
 import shlex
 from collections import deque
 from functools import singledispatch
+from pathlib import Path
 from typing import Any, List, Optional, Tuple
-
-from aiofiles import tempfile  # type: ignore
 
 from ._logger import logger
 from .constants import (
@@ -14,7 +13,6 @@ from .constants import (
     TESSERACT_CMD,
 )
 from .exceptions import TesseractNotFoundError, TesseractRuntimeError
-from .file_format import FileFormat
 from .validators import file_exists, oem_is_valid, psm_is_valid
 
 
@@ -56,30 +54,21 @@ async def _(
     oem: int = 3,
     nice: int = 0,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-):
-    cmd_args = await _build_cmd_args(
-        input_file=image,
-        output_extension=output_format,
-        dpi=dpi,
-        psm=psm,
-        oem=oem,
-        user_words=user_words,
-        user_patterns=user_patterns,
-        lang=lang,
+) -> bytes:
+    await file_exists(image)
+    response: bytes = await execute(
+        Path(image).read_bytes(),
+        output_format,
+        user_words,
+        user_patterns,
+        dpi,
+        lang,
+        psm,
+        oem,
+        nice,
+        timeout,
     )
-    try:
-        proc = await asyncio.create_subprocess_exec(
-            TESSERACT_CMD,
-            *cmd_args,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-    except OSError:
-        raise TesseractNotFoundError(f"{TESSERACT_CMD} not found.")
-    stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout)
-    if proc.returncode != 0:
-        raise TesseractRuntimeError(stderr.decode(AIOPYTESSERACT_DEFAULT_ENCODING))
-    return stdout.decode(AIOPYTESSERACT_DEFAULT_ENCODING)
+    return response
 
 
 @execute.register(bytes)
@@ -94,26 +83,34 @@ async def _(
     oem: int = 3,
     nice: int = 0,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-):
-    async with tempfile.NamedTemporaryFile() as input_file:
-        await input_file.write(image)
-        image_text = await execute(
-            input_file.name,
-            output_format,
-            user_words,
-            user_patterns,
-            dpi,
-            lang,
-            psm,
-            oem,
-            nice,
-            timeout,
+) -> bytes:
+    cmd_args = await _build_cmd_args(
+        output_extension=output_format,
+        dpi=dpi,
+        psm=psm,
+        oem=oem,
+        user_words=user_words,
+        user_patterns=user_patterns,
+        lang=lang,
+    )
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            TESSERACT_CMD,
+            *cmd_args,
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
-    return image_text
+    except OSError:
+        raise TesseractNotFoundError(f"{TESSERACT_CMD} not found.")
+    stdout, stderr = await asyncio.wait_for(proc.communicate(image), timeout=timeout)
+    if proc.returncode != 0:
+        raise TesseractRuntimeError(stderr.decode(AIOPYTESSERACT_DEFAULT_ENCODING))
+    return stdout
 
 
 async def execute_multi_output_cmd(
-    image: str,
+    image: bytes,
     output_file: str,
     output_format: str,
     user_words: Optional[str] = None,
@@ -126,26 +123,26 @@ async def execute_multi_output_cmd(
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> Tuple[str, ...]:
     cmd_args = await _build_cmd_args(
-        input_file=image,
-        output_extension=output_format.replace(FileFormat.STDOUT, ""),
+        output_extension=output_format,
         dpi=dpi,
         psm=psm,
         oem=oem,
         user_words=user_words,
         user_patterns=user_patterns,
         lang=lang,
-        output_file=output_file,
+        output=output_file,
     )
     try:
         proc = await asyncio.create_subprocess_exec(
             TESSERACT_CMD,
             *cmd_args,
+            stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
     except OSError:
         raise TesseractNotFoundError(f"{TESSERACT_CMD} not found.")
-    _, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+    _, stderr = await asyncio.wait_for(proc.communicate(image), timeout=timeout)
     if proc.returncode != 0:
         raise TesseractRuntimeError(stderr.decode(AIOPYTESSERACT_DEFAULT_ENCODING))
     return tuple(
@@ -154,7 +151,6 @@ async def execute_multi_output_cmd(
 
 
 async def _build_cmd_args(
-    input_file: str,
     output_extension: str,
     dpi: int,
     psm: int,
@@ -162,11 +158,11 @@ async def _build_cmd_args(
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
     lang: Optional[str] = None,
-    output_file: Optional[str] = None,
+    output: str = "stdout",
 ) -> List[str]:
-    await asyncio.gather(psm_is_valid(psm), oem_is_valid(oem), file_exists(input_file))
+    await asyncio.gather(psm_is_valid(psm), oem_is_valid(oem))
     cmd_args = deque(
-        [input_file, "--dpi", f"{dpi}", "--psm", f"{psm}", "--oem", f"{oem}"]
+        ["stdin", f"{output}", "--dpi", f"{dpi}", "--psm", f"{psm}", "--oem", f"{oem}"]
     )
     if user_words:
         cmd_args.append("--user-words")
@@ -182,10 +178,7 @@ async def _build_cmd_args(
 
     extension = reversed(output_extension.split())
     for ext in extension:
-        cmd_args.insert(1, ext)
-
-    if output_file:
-        cmd_args.insert(1, f"{output_file}")
+        cmd_args.append(ext)
 
     logger.debug(f"Command: 'tesseract {shlex.join(cmd_args)}'")
     return shlex.split(shlex.join(cmd_args))

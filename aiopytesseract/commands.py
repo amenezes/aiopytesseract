@@ -1,7 +1,8 @@
 import shlex
 from contextlib import asynccontextmanager
 from functools import singledispatch
-from typing import Any, List, Optional
+from pathlib import Path
+from typing import Any, AsyncGenerator, List, Optional, Tuple
 
 from aiofiles import tempfile  # type: ignore
 
@@ -84,9 +85,9 @@ async def _(
     nice: int = AIOPYTESSERACT_DEFAULT_NICE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> str:
-    image_text: str = await execute(
+    image_text: bytes = await execute(
         image,
-        FileFormat.STDOUT,
+        FileFormat.TXT,
         user_words,
         user_patterns,
         dpi,
@@ -96,7 +97,7 @@ async def _(
         nice,
         timeout,
     )
-    return image_text
+    return image_text.decode(AIOPYTESSERACT_DEFAULT_ENCODING)
 
 
 @image_to_string.register(bytes)
@@ -111,9 +112,9 @@ async def _(
     nice: int = AIOPYTESSERACT_DEFAULT_NICE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> str:
-    image_text: str = await execute(
+    image_text: bytes = await execute(
         image,
-        FileFormat.STDOUT,
+        FileFormat.TXT,
         user_words,
         user_patterns,
         dpi,
@@ -123,7 +124,7 @@ async def _(
         nice,
         timeout,
     )
-    return image_text
+    return image_text.decode(AIOPYTESSERACT_DEFAULT_ENCODING)
 
 
 @singledispatch
@@ -138,6 +139,18 @@ async def image_to_hocr(
     nice: int = AIOPYTESSERACT_DEFAULT_NICE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ):
+    """TODO
+
+    :param image: image input to tesseract. (valid values: str, bytes)
+    :param user_words:
+    :param user_patterns:
+    :param dpi:
+    :param lang:
+    :param psm:
+    :param oem:
+    :param nice:
+    :param timeout:
+    """
     raise NotImplementedError
 
 
@@ -153,7 +166,7 @@ async def _(
     nice: int = AIOPYTESSERACT_DEFAULT_NICE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> bytes:
-    async with execute(
+    output: Path = await execute(
         image,
         FileFormat.HOCR,
         user_words,
@@ -164,8 +177,8 @@ async def _(
         oem,
         nice,
         timeout,
-    ) as output:
-        return output.read_bytes()
+    )
+    return output.read_bytes()
 
 
 @image_to_hocr.register(bytes)
@@ -180,7 +193,7 @@ async def _(
     nice: int = AIOPYTESSERACT_DEFAULT_NICE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> bytes:
-    async with execute(
+    output: Path = await execute(
         image,
         FileFormat.HOCR,
         user_words,
@@ -191,8 +204,8 @@ async def _(
         oem,
         nice,
         timeout,
-    ) as output:
-        return output.read_bytes()
+    )
+    return output.read_bytes()
 
 
 @singledispatch
@@ -206,7 +219,19 @@ async def image_to_pdf(
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
     nice: int = AIOPYTESSERACT_DEFAULT_NICE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-):
+) -> bytes:
+    """Generate a searchable PDF from an image.
+
+    :param image: image input to tesseract. (valid values: str, bytes)
+    :param user_words:
+    :param user_patterns:
+    :param dpi:
+    :param lang:
+    :param psm:
+    :param oem:
+    :param nice:
+    :param timeout:
+    """
     raise NotImplementedError
 
 
@@ -222,7 +247,7 @@ async def _(
     nice: int = AIOPYTESSERACT_DEFAULT_NICE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> bytes:
-    async with execute(
+    output: bytes = await execute(
         image,
         FileFormat.PDF,
         user_words,
@@ -233,8 +258,8 @@ async def _(
         oem,
         nice,
         timeout,
-    ) as output:
-        return output.read_bytes()
+    )
+    return output
 
 
 @image_to_pdf.register(bytes)
@@ -249,7 +274,7 @@ async def _(
     nice: int = AIOPYTESSERACT_DEFAULT_NICE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> bytes:
-    async with execute(
+    output: bytes = await execute(
         image,
         FileFormat.PDF,
         user_words,
@@ -260,8 +285,8 @@ async def _(
         oem,
         nice,
         timeout,
-    ) as output:
-        return output.read_bytes()
+    )
+    return output
 
 
 async def image_to_boxes():
@@ -276,28 +301,9 @@ async def image_to_osd():
     pass
 
 
-@singledispatch  # type: ignore
 @asynccontextmanager
 async def run(
-    image: Any,
-    output_filename: str,
-    output_format: List[str],
-    user_words: Optional[str] = None,
-    user_patterns: Optional[str] = None,
-    dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
-    lang: Optional[str] = None,
-    psm: int = AIOPYTESSERACT_DEFAULT_PSM,
-    oem: int = AIOPYTESSERACT_DEFAULT_OEM,
-    nice: int = AIOPYTESSERACT_DEFAULT_NICE,
-    timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-):
-    raise NotImplementedError
-
-
-@run.register(str)
-@asynccontextmanager
-async def _(
-    image: str,
+    image: bytes,
     output_filename: str,
     output_format: str,
     user_words: Optional[str] = None,
@@ -306,9 +312,21 @@ async def _(
     lang: Optional[str] = None,
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
-    nice: int = AIOPYTESSERACT_DEFAULT_NICE,
-    timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-):
+) -> AsyncGenerator[Tuple[str, ...], None]:
+    """TODO
+
+    :param image: image input to tesseract. (valid values: str, bytes)
+    :param user_words:
+    :param user_patterns:
+    :param dpi:
+    :param lang:
+    :param psm:
+    :param oem:
+    :param nice:
+    :param timeout:
+    """
+    if not isinstance(image, bytes):
+        raise Exception
     async with tempfile.TemporaryDirectory(prefix="aiopytesseract-") as tmpdir:
         resp = await execute_multi_output_cmd(
             image,
@@ -321,39 +339,4 @@ async def _(
             psm,
             oem,
         )
-        yield resp
-
-
-@run.register(bytes)
-@asynccontextmanager
-async def _(
-    image: bytes,
-    output_filename: str,
-    output_format: str,
-    user_words: Optional[str] = None,
-    user_patterns: Optional[str] = None,
-    dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
-    lang: Optional[str] = None,
-    psm: int = AIOPYTESSERACT_DEFAULT_PSM,
-    oem: int = AIOPYTESSERACT_DEFAULT_OEM,
-    nice: int = AIOPYTESSERACT_DEFAULT_NICE,
-    timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-):
-    async with tempfile.TemporaryDirectory(prefix="aiopytesseract-") as tmpdir:
-        async with tempfile.NamedTemporaryFile(
-            dir=tmpdir, prefix="aiopytesseract_input_file_"
-        ) as tmpfile:
-            await tmpfile.write(image)
-            await tmpfile.seek(0)
-            resp = await execute_multi_output_cmd(
-                tmpfile.name,
-                f"{tmpdir}/{output_filename}",
-                output_format,
-                user_words,
-                user_patterns,
-                dpi,
-                lang,
-                psm,
-                oem,
-            )
         yield resp
