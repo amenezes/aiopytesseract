@@ -19,7 +19,7 @@ endif
 
 tests:
 	@echo "> unittest"
-	python -m pytest -vv --no-cov-on-fail --color=yes --cov-report xml --cov-report term --cov=aiopytesseract tests
+	python -m pytest -vv --no-cov-on-fail --color=yes --durations=10 --cov-report xml --cov-report term --cov=aiopytesseract tests
 
 docs:
 	@echo "> generate project documentation..."
