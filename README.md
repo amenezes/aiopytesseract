@@ -1,5 +1,4 @@
 [![ci](https://github.com/amenezes/aiopytesseract/actions/workflows/ci.yml/badge.svg)](https://github.com/amenezes/aiopytesseract/actions/workflows/ci.yml)
-[![Maintainability](https://api.codeclimate.com/v1/badges/7b8b70e0c20c6809df54/maintainability)](https://codeclimate.com/github/amenezes/aiopytesseract/maintainability)
 [![codecov](https://codecov.io/gh/amenezes/aiopytesseract/branch/master/graph/badge.svg)](https://codecov.io/gh/amenezes/aiopytesseract)
 [![PyPI version](https://badge.fury.io/py/aiopytesseract.svg)](https://badge.fury.io/py/aiopytesseract)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/aiopytesseract)
