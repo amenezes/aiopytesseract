@@ -1,3 +1,4 @@
+import asyncio
 import re
 from contextlib import asynccontextmanager
 from functools import singledispatch
@@ -56,9 +57,12 @@ async def confidence(
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
+    timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> Optional[str]:
     proc = await execute_cmd(f"stdin stdout -l {lang} --dpi {dpi} --psm 0 --oem {oem}")
-    stdout, stderr = await proc.communicate(Path(image).read_bytes())
+    stdout, stderr = await asyncio.wait_for(
+        proc.communicate(Path(image).read_bytes()), timeout=timeout
+    )
     m = re.search(
         r"(Script.confidence:.(\d{1,10}.\d{1,10})$)",
         stdout.decode(AIOPYTESSERACT_DEFAULT_ENCODING),
@@ -315,7 +319,9 @@ async def _(
 
 
 @singledispatch
-async def image_to_boxes(image: Any) -> str:
+async def image_to_boxes(
+    image: Any, timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT
+) -> str:
     """Bounding box estimates.
 
     :param image: image input to tesseract. (valid values: str, bytes)
@@ -324,15 +330,15 @@ async def image_to_boxes(image: Any) -> str:
 
 
 @image_to_boxes.register(str)
-async def _(image: str) -> str:
-    boxes = await image_to_boxes(Path(image).read_bytes())
+async def _(image: str, timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT) -> str:
+    boxes = await image_to_boxes(Path(image).read_bytes(), timeout)
     return boxes
 
 
 @image_to_boxes.register(bytes)
-async def _(image: bytes) -> str:
+async def _(image: bytes, timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT) -> str:
     proc = await execute_cmd("stdin stdout batch.nochop makebox")
-    stdout, stderr = await proc.communicate(image)
+    stdout, stderr = await asyncio.wait_for(proc.communicate(image), timeout=timeout)
     if proc.returncode != 0:
         raise TesseractRuntimeError(stderr.decode(AIOPYTESSERACT_DEFAULT_ENCODING))
     return stdout.decode(AIOPYTESSERACT_DEFAULT_ENCODING)  # type: ignore
@@ -355,9 +361,13 @@ async def _(image: str, dpi: float = AIOPYTESSERACT_DEFAULT_DPI) -> str:
 
 
 @image_to_data.register(bytes)
-async def _(image: bytes, dpi: float = AIOPYTESSERACT_DEFAULT_DPI) -> str:
+async def _(
+    image: bytes,
+    dpi: float = AIOPYTESSERACT_DEFAULT_DPI,
+    timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
+) -> str:
     proc = await execute_cmd(f"stdin stdout -c tessedit_create_tsv=1 --dpi {dpi}")
-    stdout, stderr = await proc.communicate(image)
+    stdout, stderr = await asyncio.wait_for(proc.communicate(image), timeout=timeout)
     if proc.returncode != 0:
         raise TesseractRuntimeError(stderr.decode(AIOPYTESSERACT_DEFAULT_ENCODING))
     return stdout.decode(AIOPYTESSERACT_DEFAULT_ENCODING)  # type: ignore
