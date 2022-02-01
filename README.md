@@ -16,6 +16,16 @@ Install and update using pip:
 pip install aiopytesseract
 ````
 
+## Demo/Example
+
+If you want to test **aiopytesseract** easily, you can use the [streamlit](https://streamlit.io) example available in *examples/streamlit folder*. So just run:
+
+```python
+streamlit run https://github.com/amenezes/aiopytesseract/examples/streamlit/app.py
+```
+
+> note: The streamlit example need **python >= 3.10**.
+
 ## Usage
 
 ```python
