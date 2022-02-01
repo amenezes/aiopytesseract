@@ -1,0 +1,18 @@
+name: 💡 Feature Request
+description: Share your need or ideas about a problem to make **aiopytesseract** better.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Need/Ideas Statement
+      description: What your need or ideas?
+      placeholder: |-
+        Your description here =)
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |-
+        ## Thanks 🙏
+    validations:
+      required: false
