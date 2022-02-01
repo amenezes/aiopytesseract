@@ -103,7 +103,7 @@ async def image_to_string(
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-):
+) -> str:
     """Extract string from an image.
 
     :param image: image input to tesseract. (valid values: str, bytes)
@@ -345,7 +345,7 @@ async def _(image: bytes, timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT) -> st
 
 
 @singledispatch
-async def image_to_data(image: Any, dpi: float = AIOPYTESSERACT_DEFAULT_DPI) -> str:
+async def image_to_data(image: Any, dpi: int = AIOPYTESSERACT_DEFAULT_DPI) -> str:
     """Information about boxes, confidences, line and page numbers.
 
     :param image: image input to tesseract. (valid values: str, bytes)
@@ -355,7 +355,7 @@ async def image_to_data(image: Any, dpi: float = AIOPYTESSERACT_DEFAULT_DPI) -> 
 
 
 @image_to_data.register(str)
-async def _(image: str, dpi: float = AIOPYTESSERACT_DEFAULT_DPI) -> str:
+async def _(image: str, dpi: int = AIOPYTESSERACT_DEFAULT_DPI) -> str:
     resp = await image_to_data(Path(image).read_bytes(), dpi)
     return resp
 
@@ -363,7 +363,7 @@ async def _(image: str, dpi: float = AIOPYTESSERACT_DEFAULT_DPI) -> str:
 @image_to_data.register(bytes)
 async def _(
     image: bytes,
-    dpi: float = AIOPYTESSERACT_DEFAULT_DPI,
+    dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> str:
     proc = await execute_cmd(f"stdin stdout -c tessedit_create_tsv=1 --dpi {dpi}")
@@ -379,7 +379,7 @@ async def image_to_osd(
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-):
+) -> str:
     """Information about orientation and script detection.
 
     :param image: image input to tesseract. (valid values: str, bytes)
@@ -396,7 +396,7 @@ async def _(
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-):
+) -> str:
     resp = await execute(image, FileFormat.OSD, dpi, None, 0, oem, timeout)
     return resp.decode(AIOPYTESSERACT_DEFAULT_ENCODING)
 
@@ -407,7 +407,7 @@ async def _(
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-):
+) -> str:
     resp = await execute(image, FileFormat.OSD, dpi, None, 0, oem, timeout)
     return resp.decode(AIOPYTESSERACT_DEFAULT_ENCODING)
 
