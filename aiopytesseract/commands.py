@@ -59,6 +59,13 @@ async def confidence(
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> Optional[str]:
+    """Get script confidence.
+
+    :param image: image input to tesseract. (valid values: str)
+    :param dpi: image dots per inch (DPI)
+    :param oem: ocr engine modes (default: 3)
+    :param timeout: command timeout (default: 30)
+    """
     proc = await execute_cmd(f"stdin stdout -l {lang} --dpi {dpi} --psm 0 --oem {oem}")
     stdout, stderr = await asyncio.wait_for(
         proc.communicate(Path(image).read_bytes()), timeout=timeout
@@ -78,11 +85,20 @@ async def deskew(
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
+    timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> Optional[str]:
+    """Get Deskew angle.
+
+    :param image: image input to tesseract. (valid values: str)
+    :param dpi: image dots per inch (DPI)
+    :param oem: ocr engine modes (default: 3)
+    :param lang: tesseract language. (Format: eng, eng+por, eng+por+fra)
+    :param timeout: command timeout (default: 30)
+    """
     proc = await execute_cmd(
         f"{image} stdout -l {lang} --dpi {dpi} --psm 2 --oem {oem}"
     )
-    data = await proc.stderr.read()
+    data = await asyncio.wait_for(proc.stderr.read(), timeout=timeout)
     m = re.search(
         r"(Deskew.angle:.)(\d{1,10}.\d{1,10}$)",
         data.decode(AIOPYTESSERACT_DEFAULT_ENCODING),
@@ -325,6 +341,7 @@ async def image_to_boxes(
     """Bounding box estimates.
 
     :param image: image input to tesseract. (valid values: str, bytes)
+    :param timeout: command timeout (default: 30)
     """
     raise NotImplementedError
 
@@ -345,7 +362,11 @@ async def _(image: bytes, timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT) -> st
 
 
 @singledispatch
-async def image_to_data(image: Any, dpi: int = AIOPYTESSERACT_DEFAULT_DPI) -> str:
+async def image_to_data(
+    image: Any,
+    dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
+    timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
+) -> str:
     """Information about boxes, confidences, line and page numbers.
 
     :param image: image input to tesseract. (valid values: str, bytes)
@@ -355,8 +376,12 @@ async def image_to_data(image: Any, dpi: int = AIOPYTESSERACT_DEFAULT_DPI) -> st
 
 
 @image_to_data.register(str)
-async def _(image: str, dpi: int = AIOPYTESSERACT_DEFAULT_DPI) -> str:
-    resp = await image_to_data(Path(image).read_bytes(), dpi)
+async def _(
+    image: str,
+    dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
+    timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
+) -> str:
+    resp = await image_to_data(Path(image).read_bytes(), dpi, timeout)
     return resp
 
 
@@ -425,7 +450,12 @@ async def run(
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
 ) -> AsyncGenerator[Tuple[str, ...], None]:
-    """TODO
+    """Run Tesseract-OCR with multiple analysis.
+
+    This function allow run Tesseract with multiple output format with
+    just one execution. For more info:
+
+    - https://github.com/tesseract-ocr/tesseract/blob/main/doc/tesseract.1.asc#inout-arguments
 
     :param image: image input to tesseract. (valid values: str, bytes)
     :param user_words: location of user words file
@@ -437,7 +467,7 @@ async def run(
     :param timeout: command timeout (default: 30)
     """
     if not isinstance(image, bytes):
-        raise Exception
+        raise NotImplementedError
     async with tempfile.TemporaryDirectory(prefix="aiopytesseract-") as tmpdir:
         resp = await execute_multi_output_cmd(
             image,

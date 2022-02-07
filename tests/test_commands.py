@@ -28,7 +28,7 @@ async def test_tesseract_version(func):
 # run
 @pytest.mark.asyncio
 async def test_run_with_type_not_supported():
-    with pytest.raises(Exception):
+    with pytest.raises(NotImplementedError):
         async with aiopytesseract.run(
             "tests/samples/file-sample_150kB.png", "demo", "alto tsv"
         ) as output:
