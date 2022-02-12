@@ -38,3 +38,17 @@ async def test_file_exists():
 async def test_file_does_not_exist():
     with pytest.raises(exceptions.NoSuchFileException):
         await validators.file_exists("tests/samples/file-sample_150kB.jpeg")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("lang", ["por", "por+eng", "por+eng+fra"])
+async def test_language_is_valid(lang):
+    resp = await validators.language_is_valid(lang)
+    assert resp is None
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("lang", ["por eng", "por:eng", "por-eng", "por+zuul"])
+async def test_language_is_invalid(lang):
+    with pytest.raises(exceptions.LanguageInvalidException):
+        await validators.language_is_valid(lang)

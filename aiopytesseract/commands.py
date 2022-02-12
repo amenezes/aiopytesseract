@@ -19,6 +19,7 @@ from .constants import (
 )
 from .exceptions import TesseractRuntimeError
 from .file_format import FileFormat
+from .parameter import Parameter
 
 
 async def languages(config: str = "") -> List:
@@ -107,6 +108,22 @@ async def deskew(
     if m:
         resp = m.group(2)
     return resp
+
+
+async def tesseract_parameters():
+    """List of all Tesseract parameters with default value and short description.
+
+    reference: https://tesseract-ocr.github.io/tessdoc/tess3/ControlParams.html
+    """
+    proc = await execute_cmd("--print-parameters")
+    data: bytes = await proc.stdout.read()
+    data = data.decode(AIOPYTESSERACT_DEFAULT_ENCODING)
+    datalen = len(data.split("\n")) - 1
+    params = []
+    for line in data.split("\n")[1:datalen]:
+        param = line.split()
+        params.append(Parameter(param[0], param[1], " ".join(param[2:])))
+    return params
 
 
 @singledispatch

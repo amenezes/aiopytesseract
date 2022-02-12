@@ -11,6 +11,7 @@ from .commands import (
     image_to_string,
     languages,
     run,
+    tesseract_parameters,
     tesseract_version,
 )
 
@@ -30,4 +31,5 @@ __all__ = [
     "languages",
     "run",
     "tesseract_version",
+    "tesseract_parameters",
 ]

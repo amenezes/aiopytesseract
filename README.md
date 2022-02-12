@@ -8,7 +8,7 @@
 
 asyncio tesseract wrapper for [Tesseract-OCR]().
 
-## Installing
+## Installation
 
 Install and update using pip:
 
