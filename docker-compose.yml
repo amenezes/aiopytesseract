@@ -1,0 +1,7 @@
+version: "3"
+services:
+  aiopytesseract:
+    container_name: aiopytesseract
+    build: .
+    ports:
+      - 8501:8501
