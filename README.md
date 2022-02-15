@@ -6,7 +6,7 @@
 
 # aiopytesseract
 
-A Python [asyncio](https://docs.python.org/3/library/asyncio.html?highlight=asyncio) wrapper for [Tesseract-OCR](https://tesseract-ocr.github.io/tessdoc/).
+A Python [asyncio](https://docs.python.org/3/library/asyncio.html) wrapper for [Tesseract-OCR](https://tesseract-ocr.github.io/tessdoc/).
 
 ## Installation
 
