@@ -6,7 +6,7 @@ jobs:
   tests:
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10']
+        python-version: ['3.8', '3.9', '3.10', 'pypy-3.8']
         os: [ubuntu]
       fail-fast: true
     runs-on: ${{ matrix.os }}-latest

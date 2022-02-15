@@ -6,25 +6,15 @@
 
 # aiopytesseract
 
-asyncio tesseract wrapper for [Tesseract-OCR]().
+A Python [asyncio](https://docs.python.org/3/library/asyncio.html?highlight=asyncio) wrapper for [Tesseract-OCR](https://tesseract-ocr.github.io/tessdoc/).
 
-## Installing
+## Installation
 
 Install and update using pip:
 
 ````bash
 pip install aiopytesseract
 ````
-
-## Demo/Example
-
-If you want to test **aiopytesseract** easily, you can use the [streamlit](https://streamlit.io) example available in *examples/streamlit folder*. So just run:
-
-```python
-streamlit run https://github.com/amenezes/aiopytesseract/examples/streamlit/app.py
-```
-
-> note: The streamlit example need **python >= 3.10**.
 
 ## Usage
 
@@ -42,6 +32,10 @@ await aiopytesseract.get_languages()
 # tesseract version
 await aiopytesseract.tesseract_version()
 await aiopytesseract.get_tesseract_version()
+
+
+# tesseract parameters
+await aiopytesseract.tesseract_parameters()
 
 
 # confidence only info
@@ -94,6 +88,40 @@ async with aiopytesseract.run(
 	print(resp)
 	alto_file, tsv_file, txt_file = resp
 ```
+
+## Examples
+
+If you want to test **aiopytesseract** easily, can you use some options like:
+
+- docker
+- docker-compose
+- [streamlit](https://streamlit.io)
+
+### Docker
+
+Just copy and paste the following line.
+
+```bash
+docker run --rm --name aiopytesseract -p 8501:8501 amenezes/aiopytesseract
+```
+
+### docker-compose
+
+After clone this repo run the command below:
+
+```bash
+docker-compose up -d
+```
+
+### streamlit app
+
+For this option it's necessary first install `aiopytesseract` and `streamlit`, after execute:
+
+```python
+streamlit run https://github.com/amenezes/aiopytesseract/blob/master/examples/streamlit/app.py
+```
+
+> note: The streamlit example need **python >= 3.10**
 
 ## Links
 

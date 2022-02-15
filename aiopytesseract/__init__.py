@@ -11,10 +11,11 @@ from .commands import (
     image_to_string,
     languages,
     run,
+    tesseract_parameters,
     tesseract_version,
 )
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 __all__ = [
     "__version__",
     "confidence",
@@ -30,4 +31,5 @@ __all__ = [
     "languages",
     "run",
     "tesseract_version",
+    "tesseract_parameters",
 ]

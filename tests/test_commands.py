@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 import aiopytesseract
+from aiopytesseract.parameter import Parameter
 
 
 @pytest.mark.asyncio
@@ -28,7 +29,7 @@ async def test_tesseract_version(func):
 # run
 @pytest.mark.asyncio
 async def test_run_with_type_not_supported():
-    with pytest.raises(Exception):
+    with pytest.raises(NotImplementedError):
         async with aiopytesseract.run(
             "tests/samples/file-sample_150kB.png", "demo", "alto tsv"
         ) as output:
@@ -47,6 +48,9 @@ async def test_run_with_bytes_image():
         assert Path(txt_file).exists()
         assert Path(tsv_file).exists()
         assert Path(pdf_file).exists()
+    assert not Path(txt_file).exists()
+    assert not Path(tsv_file).exists()
+    assert not Path(pdf_file).exists()
 
 
 @pytest.mark.asyncio
@@ -71,3 +75,10 @@ async def test_deskew():
 async def test_deskew_without_result():
     deskew = await aiopytesseract.deskew("tests/samples/file-sample_150kB.pdf")
     assert deskew is None
+
+
+@pytest.mark.asyncio
+async def test_tesseract_parameters():
+    parameters = await aiopytesseract.tesseract_parameters()
+    assert isinstance(parameters, list)
+    assert isinstance(parameters[0], Parameter)

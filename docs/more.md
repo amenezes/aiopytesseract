@@ -3,6 +3,7 @@
 ### Reference
 
 - https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html
+- https://www.pyimagesearch.com/2021/11/15/tesseract-page-segmentation-modes-psms-explained-how-to-improve-your-ocr-accuracy/
 
 
 ## Tesseract Command line
