@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True)
 class Parameter:
     name: str
-    value: str
+    value: float
     description: str

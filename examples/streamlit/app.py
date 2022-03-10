@@ -97,19 +97,19 @@ if st.sidebar.button("Execute"):
                     )
                 )
                 st.markdown("""### Result:""")
-                st.code(hocr.decode("utf-8"))
+                st.code(hocr)
             case "Image to Boxes":
                 boxes = loop.run_until_complete(
                     aiopytesseract.image_to_boxes(image.getvalue())
                 )
                 st.markdown("""### Result:""")
-                st.code(boxes)
+                st.table(boxes)
             case "Image to Data":
                 data = loop.run_until_complete(
                     aiopytesseract.image_to_data(image.getvalue())
                 )
                 st.markdown("""### Result:""")
-                st.code(data)
+                st.table(data)
             case "Image to OSD":
                 osd = loop.run_until_complete(
                     aiopytesseract.image_to_osd(
@@ -117,7 +117,7 @@ if st.sidebar.button("Execute"):
                     )
                 )
                 st.markdown("""### Result:""")
-                st.text(osd)
+                st.table([osd])
             case "Confidence":
                 with tempfile.NamedTemporaryFile(mode="w+b") as tmpfile:
                     tmpfile.write(image.getvalue())

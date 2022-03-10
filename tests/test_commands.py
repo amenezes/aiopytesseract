@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 import aiopytesseract
-from aiopytesseract.parameter import Parameter
+from aiopytesseract.models import Parameter
 
 
 @pytest.mark.asyncio
@@ -54,27 +54,29 @@ async def test_run_with_bytes_image():
 
 
 @pytest.mark.asyncio
-async def test_confidence():
-    confidence = await aiopytesseract.confidence("tests/samples/file-sample_150kB.png")
-    assert confidence == "2.00"
+@pytest.mark.parametrize(
+    "image_file, expected",
+    [
+        ("tests/samples/file-sample_150kB.png", 2.0),
+        ("tests/samples/file-sample_150kB.pdf", 0.0),
+    ],
+)
+async def test_confidence(image_file, expected):
+    confidence = await aiopytesseract.confidence(image_file)
+    assert confidence == expected
 
 
 @pytest.mark.asyncio
-async def test_confidence_without_result():
-    confidence = await aiopytesseract.confidence("tests/samples/file-sample_150kB.pdf")
-    assert confidence is None
-
-
-@pytest.mark.asyncio
-async def test_deskew():
-    deskew = await aiopytesseract.deskew("tests/samples/file-sample_150kB.png")
-    assert deskew == "0.0000"
-
-
-@pytest.mark.asyncio
-async def test_deskew_without_result():
-    deskew = await aiopytesseract.deskew("tests/samples/file-sample_150kB.pdf")
-    assert deskew is None
+@pytest.mark.parametrize(
+    "image_file, expected",
+    [
+        ("tests/samples/file-sample_150kB.png", 0.0),
+        ("tests/samples/file-sample_150kB.pdf", 0.0),
+    ],
+)
+async def test_deskew(image_file, expected):
+    deskew = await aiopytesseract.deskew(image_file)
+    assert deskew == expected
 
 
 @pytest.mark.asyncio

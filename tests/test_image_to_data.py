@@ -3,22 +3,25 @@ from pathlib import Path
 import pytest
 
 import aiopytesseract
+from aiopytesseract.models import Data
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("image", ["tests/samples/file-sample_150kB.png"])
 async def test_image_to_data_with_str_image(image):
     data = await aiopytesseract.image_to_data(image)
-    assert isinstance(data, str)
-    assert len(data) >= 800
+    assert isinstance(data, list)
+    assert isinstance(data[0], Data)
+    assert len(data) == 22
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("image", ["tests/samples/file-sample_150kB.png"])
 async def test_image_to_data_with_bytes_image(image):
     data = await aiopytesseract.image_to_data(Path(image).read_bytes())
-    assert isinstance(data, str)
-    assert len(data) >= 800
+    assert isinstance(data, list)
+    assert isinstance(data[0], Data)
+    assert len(data) == 22
 
 
 @pytest.mark.asyncio
