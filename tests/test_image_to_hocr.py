@@ -9,7 +9,7 @@ import aiopytesseract
 @pytest.mark.parametrize("image", ["tests/samples/file-sample_150kB.png"])
 async def test_image_to_hocr_with_str_image(image):
     hocr = await aiopytesseract.image_to_hocr(image)
-    assert isinstance(hocr, bytes)
+    assert isinstance(hocr, str)
     assert len(hocr) > 50
 
 
@@ -17,7 +17,7 @@ async def test_image_to_hocr_with_str_image(image):
 @pytest.mark.parametrize("image", ["tests/samples/file-sample_150kB.png"])
 async def test_image_to_hocr_with_bytes_image(image):
     hocr = await aiopytesseract.image_to_hocr(Path(image).read_bytes())
-    assert isinstance(hocr, bytes)
+    assert isinstance(hocr, str)
     assert len(hocr) > 50
 
 

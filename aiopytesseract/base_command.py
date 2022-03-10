@@ -8,6 +8,7 @@ from typing import Any, List, Optional, Tuple
 from ._logger import logger
 from .constants import (
     AIOPYTESSERACT_DEFAULT_ENCODING,
+    AIOPYTESSERACT_DEFAULT_TIMEOUT,
     OUTPUT_FILE_EXTENSIONS,
     TESSERACT_CMD,
 )
@@ -15,14 +16,17 @@ from .exceptions import TesseractNotFoundError, TesseractRuntimeError
 from .validators import file_exists, language_is_valid, oem_is_valid, psm_is_valid
 
 
-async def execute_cmd(cmd_args: str):
+async def execute_cmd(cmd_args: str, timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT):
     logger.debug(f"Command: '{TESSERACT_CMD} {shlex.join(shlex.split(cmd_args))}'")
-    proc = await asyncio.create_subprocess_exec(
-        TESSERACT_CMD,
-        *shlex.split(cmd_args),
-        stdin=asyncio.subprocess.PIPE,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
+    proc = await asyncio.wait_for(
+        asyncio.create_subprocess_exec(
+            TESSERACT_CMD,
+            *shlex.split(cmd_args),
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        ),
+        timeout=timeout,
     )
     return proc
 
@@ -91,12 +95,15 @@ async def _(
         lang=lang,
     )
     try:
-        proc = await asyncio.create_subprocess_exec(
-            TESSERACT_CMD,
-            *cmd_args,
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+        proc = await asyncio.wait_for(
+            asyncio.create_subprocess_exec(
+                TESSERACT_CMD,
+                *cmd_args,
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            ),
+            timeout=timeout,
         )
     except OSError:
         raise TesseractNotFoundError(f"{TESSERACT_CMD} not found.")
@@ -129,12 +136,15 @@ async def execute_multi_output_cmd(
         output=output_file,
     )
     try:
-        proc = await asyncio.create_subprocess_exec(
-            TESSERACT_CMD,
-            *cmd_args,
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+        proc = await asyncio.wait_for(
+            asyncio.create_subprocess_exec(
+                TESSERACT_CMD,
+                *cmd_args,
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            ),
+            timeout=timeout,
         )
     except OSError:
         raise TesseractNotFoundError(f"{TESSERACT_CMD} not found.")
