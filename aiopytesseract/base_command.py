@@ -13,11 +13,14 @@ from .constants import (
     TESSERACT_CMD,
 )
 from .exceptions import TesseractNotFoundError, TesseractRuntimeError
+from .returncode import ReturnCode
 from .validators import file_exists, language_is_valid, oem_is_valid, psm_is_valid
 
 
 async def execute_cmd(cmd_args: str, timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT):
-    logger.debug(f"Command: '{TESSERACT_CMD} {shlex.join(shlex.split(cmd_args))}'")
+    logger.debug(
+        f"aiopytesseract command: '{TESSERACT_CMD} {shlex.join(shlex.split(cmd_args))}'"
+    )
     proc = await asyncio.wait_for(
         asyncio.create_subprocess_exec(
             TESSERACT_CMD,
@@ -84,6 +87,7 @@ async def _(
     timeout: float,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
+    encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> bytes:
     cmd_args = await _build_cmd_args(
         output_extension=output_format,
@@ -108,8 +112,8 @@ async def _(
     except OSError:
         raise TesseractNotFoundError(f"{TESSERACT_CMD} not found.")
     stdout, stderr = await asyncio.wait_for(proc.communicate(image), timeout=timeout)
-    if proc.returncode != 0:
-        raise TesseractRuntimeError(stderr.decode(AIOPYTESSERACT_DEFAULT_ENCODING))
+    if proc.returncode != ReturnCode.SUCCESS:
+        raise TesseractRuntimeError(stderr.decode(encoding))
     return stdout
 
 
@@ -124,6 +128,7 @@ async def execute_multi_output_cmd(
     timeout: float,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
+    encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> Tuple[str, ...]:
     cmd_args = await _build_cmd_args(
         output_extension=output_format,
@@ -149,8 +154,8 @@ async def execute_multi_output_cmd(
     except OSError:
         raise TesseractNotFoundError(f"{TESSERACT_CMD} not found.")
     _, stderr = await asyncio.wait_for(proc.communicate(image), timeout=timeout)
-    if proc.returncode != 0:
-        raise TesseractRuntimeError(stderr.decode(AIOPYTESSERACT_DEFAULT_ENCODING))
+    if proc.returncode != ReturnCode.SUCCESS:
+        raise TesseractRuntimeError(stderr.decode(encoding))
     return tuple(
         [f"{output_file}{OUTPUT_FILE_EXTENSIONS[ext]}" for ext in output_format.split()]  # type: ignore
     )
@@ -187,5 +192,5 @@ async def _build_cmd_args(
     for ext in extension:
         cmd_args.append(ext)
 
-    logger.debug(f"Command: 'tesseract {shlex.join(cmd_args)}'")
+    logger.debug(f"aiopytesseract command: 'tesseract {shlex.join(cmd_args)}'")
     return shlex.split(shlex.join(cmd_args))

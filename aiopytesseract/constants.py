@@ -1,8 +1,6 @@
-import os
-
 from .file_format import FileFormat
 
-TESSERACT_CMD: str = str(os.getenv("TESSERACT_CMD", "tesseract"))
+TESSERACT_CMD: str = "tesseract"
 
 # https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html
 TESSERACT_LANGUAGES = {
@@ -157,12 +155,8 @@ OCR_ENGINE_MODES = {
     3: "Default, based on what is available.",
 }
 
-AIOPYTESSERACT_DEFAULT_ENCODING: str = str(
-    os.getenv("AIOPYTESSERACT_DEFAULT_ENCODING", "utf-8")
-)
-AIOPYTESSERACT_DEFAULT_TIMEOUT: float = float(
-    os.getenv("AIOPYTESSERACT_DEFAULT_TIMEOUT", 30)
-)
+AIOPYTESSERACT_DEFAULT_ENCODING: str = "utf-8"
+AIOPYTESSERACT_DEFAULT_TIMEOUT: float = 30
 AIOPYTESSERACT_DEFAULT_LANGUAGE: str = "eng"
 AIOPYTESSERACT_DEFAULT_DPI: int = 200
 AIOPYTESSERACT_DEFAULT_PSM: int = 3

@@ -8,8 +8,6 @@ class FileFormat(str, Enum):
     PDF: str = "pdf"
     TSV: str = "tsv"
     TXT: str = "txt"
-    STDOUT: str = "stdout"
-    STDIN: str = "stdin"
     OSD: str = "osd"
 
     def __str__(self) -> str:
