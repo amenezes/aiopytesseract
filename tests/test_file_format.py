@@ -3,9 +3,7 @@ import pytest
 from aiopytesseract.file_format import FileFormat
 
 
-@pytest.mark.parametrize(
-    "output_format", ["alto", "hocr", "pdf", "tsv", "txt", "stdout", "stdin"]
-)
+@pytest.mark.parametrize("output_format", ["alto", "hocr", "pdf", "tsv", "txt"])
 async def test_tesseract_formats_supported(output_format):
     assert output_format in list(FileFormat)
 
@@ -18,8 +16,6 @@ async def test_tesseract_formats_supported(output_format):
         ("pdf", FileFormat.PDF),
         ("tsv", FileFormat.TSV),
         ("txt", FileFormat.TXT),
-        ("stdout", FileFormat.STDOUT),
-        ("stdin", FileFormat.STDIN),
     ],
 )
 async def test_file_format_str(output_format, fileformat):
