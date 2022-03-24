@@ -1,7 +1,3 @@
-class TesseractNotFoundError(Exception):
-    pass
-
-
 class TesseractRuntimeError(RuntimeError):
     pass
 

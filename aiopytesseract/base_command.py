@@ -12,7 +12,7 @@ from .constants import (
     OUTPUT_FILE_EXTENSIONS,
     TESSERACT_CMD,
 )
-from .exceptions import TesseractNotFoundError, TesseractRuntimeError
+from .exceptions import TesseractRuntimeError
 from .returncode import ReturnCode
 from .validators import file_exists, language_is_valid, oem_is_valid, psm_is_valid
 
@@ -98,19 +98,16 @@ async def _(
         user_patterns=user_patterns,
         lang=lang,
     )
-    try:
-        proc = await asyncio.wait_for(
-            asyncio.create_subprocess_exec(
-                TESSERACT_CMD,
-                *cmd_args,
-                stdin=asyncio.subprocess.PIPE,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            ),
-            timeout=timeout,
-        )
-    except OSError:
-        raise TesseractNotFoundError(f"{TESSERACT_CMD} not found.")
+    proc = await asyncio.wait_for(
+        asyncio.create_subprocess_exec(
+            TESSERACT_CMD,
+            *cmd_args,
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        ),
+        timeout=timeout,
+    )
     stdout, stderr = await asyncio.wait_for(proc.communicate(image), timeout=timeout)
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))
@@ -140,19 +137,16 @@ async def execute_multi_output_cmd(
         lang=lang,
         output=output_file,
     )
-    try:
-        proc = await asyncio.wait_for(
-            asyncio.create_subprocess_exec(
-                TESSERACT_CMD,
-                *cmd_args,
-                stdin=asyncio.subprocess.PIPE,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            ),
-            timeout=timeout,
-        )
-    except OSError:
-        raise TesseractNotFoundError(f"{TESSERACT_CMD} not found.")
+    proc = await asyncio.wait_for(
+        asyncio.create_subprocess_exec(
+            TESSERACT_CMD,
+            *cmd_args,
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        ),
+        timeout=timeout,
+    )
     _, stderr = await asyncio.wait_for(proc.communicate(image), timeout=timeout)
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))
