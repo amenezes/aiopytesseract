@@ -20,3 +20,4 @@ async def test_tesseract_formats_supported(output_format):
 )
 async def test_file_format_str(output_format, fileformat):
     assert output_format == fileformat
+    assert output_format == str(fileformat)
