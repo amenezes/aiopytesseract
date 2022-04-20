@@ -45,6 +45,7 @@ async def execute(
     timeout: float,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
+    tessdata_dir: Optional[str] = None,
 ) -> bytes:
     raise NotImplementedError
 
@@ -60,6 +61,7 @@ async def _(
     timeout: float,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
+    tessdata_dir: Optional[str] = None,
 ) -> bytes:
     await file_exists(image)
     response: bytes = await execute(
@@ -72,6 +74,7 @@ async def _(
         timeout,
         user_words,
         user_patterns,
+        tessdata_dir,
     )
     return response
 
@@ -87,6 +90,7 @@ async def _(
     timeout: float,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
+    tessdata_dir: Optional[str] = None,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> bytes:
     cmd_args = await _build_cmd_args(
@@ -96,6 +100,7 @@ async def _(
         oem=oem,
         user_words=user_words,
         user_patterns=user_patterns,
+        tessdata_dir=tessdata_dir,
         lang=lang,
     )
     proc = await asyncio.wait_for(
@@ -125,6 +130,7 @@ async def execute_multi_output_cmd(
     timeout: float,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
+    tessdata_dir: Optional[str] = None,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> Tuple[str, ...]:
     cmd_args = await _build_cmd_args(
@@ -134,6 +140,7 @@ async def execute_multi_output_cmd(
         oem=oem,
         user_words=user_words,
         user_patterns=user_patterns,
+        tessdata_dir=tessdata_dir,
         lang=lang,
         output=output_file,
     )
@@ -162,6 +169,7 @@ async def _build_cmd_args(
     oem: int,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
+    tessdata_dir: Optional[str] = None,
     lang: Optional[str] = None,
     output: str = "stdout",
 ) -> List[str]:
@@ -176,6 +184,10 @@ async def _build_cmd_args(
     if user_patterns:
         cmd_args.append("--user-patterns")
         cmd_args.append(user_patterns)
+
+    if tessdata_dir:
+        cmd_args.append("--tessdata-dir")
+        cmd_args.append(tessdata_dir)
 
     if lang:
         await language_is_valid(lang)
