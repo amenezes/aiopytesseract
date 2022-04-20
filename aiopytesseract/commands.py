@@ -151,6 +151,7 @@ async def image_to_string(
     image: Any,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
+    tessdata_dir: Optional[str] = None,
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
@@ -181,6 +182,7 @@ async def _(
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
+    tessdata_dir: Optional[str] = None,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> str:
     image_text: bytes = await execute(
@@ -193,6 +195,7 @@ async def _(
         timeout,
         user_words,
         user_patterns,
+        tessdata_dir,
     )
     return image_text.decode(encoding)
 
@@ -207,6 +210,7 @@ async def _(
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
+    tessdata_dir: Optional[str] = None,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> str:
     image_text: bytes = await execute(
@@ -219,6 +223,7 @@ async def _(
         timeout,
         user_words,
         user_patterns,
+        tessdata_dir,
     )
     return image_text.decode(encoding)
 
@@ -228,6 +233,7 @@ async def image_to_hocr(
     image: Any,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
+    tessdata_dir: Optional[str] = None,
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
@@ -253,6 +259,7 @@ async def _(
     image: str,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
+    tessdata_dir: Optional[str] = None,
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
@@ -270,6 +277,7 @@ async def _(
         timeout,
         user_words,
         user_patterns,
+        tessdata_dir,
     )
     return output.decode(encoding)
 
@@ -284,6 +292,7 @@ async def _(
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
+    tessdata_dir: Optional[str] = None,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> str:
     output: bytes = await execute(
@@ -296,6 +305,7 @@ async def _(
         timeout,
         user_words,
         user_patterns,
+        tessdata_dir,
     )
     return output.decode(encoding)
 
@@ -310,6 +320,7 @@ async def image_to_pdf(
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
+    tessdata_dir: Optional[str] = None,
 ) -> bytes:
     """Generate a searchable PDF from an image.
 
@@ -335,6 +346,7 @@ async def _(
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
+    tessdata_dir: Optional[str] = None,
 ) -> bytes:
     output: bytes = await execute(
         image,
@@ -346,6 +358,7 @@ async def _(
         timeout,
         user_words,
         user_patterns,
+        tessdata_dir,
     )
     return output
 
@@ -360,6 +373,7 @@ async def _(
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
+    tessdata_dir: Optional[str] = None,
 ) -> bytes:
     output: bytes = await execute(
         image,
@@ -371,6 +385,7 @@ async def _(
         timeout,
         user_words,
         user_patterns,
+        tessdata_dir,
     )
     return output
 
@@ -519,6 +534,7 @@ async def run(
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
+    tessdata_dir: Optional[str] = None,
 ) -> AsyncGenerator[Tuple[str, ...], None]:
     """Run Tesseract-OCR with multiple analysis.
 
@@ -550,5 +566,6 @@ async def run(
             timeout,
             user_words,
             user_patterns,
+            tessdata_dir,
         )
         yield resp
