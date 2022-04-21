@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 import aiopytesseract
+from aiopytesseract.exceptions import TesseractRuntimeError
 
 
 @pytest.mark.asyncio
@@ -30,6 +31,14 @@ async def test_image_to_string_with_bytes_image_args(image):
     )
     assert isinstance(text, str)
     assert len(text) >= 90
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("image", ["tests/samples/file-sample_150kB.png"])
+async def test_image_to_string_with_bytes_image_timeout(image):
+    with pytest.raises(TesseractRuntimeError) as exc_info:
+        await aiopytesseract.image_to_string(Path(image).read_bytes(), timeout=0.1)
+    assert exc_info.type is TesseractRuntimeError
 
 
 @pytest.mark.asyncio

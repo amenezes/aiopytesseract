@@ -103,19 +103,28 @@ async def _(
         tessdata_dir=tessdata_dir,
         lang=lang,
     )
-    proc = await asyncio.wait_for(
-        asyncio.create_subprocess_exec(
-            TESSERACT_CMD,
-            *cmd_args,
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        ),
-        timeout=timeout,
-    )
-    stdout, stderr = await asyncio.wait_for(proc.communicate(image), timeout=timeout)
-    if proc.returncode != ReturnCode.SUCCESS:
-        raise TesseractRuntimeError(stderr.decode(encoding))
+    try:
+        proc = None
+        proc = await asyncio.wait_for(
+            asyncio.create_subprocess_exec(
+                TESSERACT_CMD,
+                *cmd_args,
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            ),
+            timeout=timeout,
+        )
+        stdout, stderr = await asyncio.wait_for(
+            proc.communicate(image), timeout=timeout
+        )
+        if proc.returncode != ReturnCode.SUCCESS:
+            raise TesseractRuntimeError(stderr.decode(encoding))
+    except asyncio.TimeoutError:
+        raise TesseractRuntimeError("Exceed the timeout")
+    finally:
+        if proc is not None and proc.returncode is None:
+            proc.kill()
     return stdout
 
 
@@ -144,22 +153,29 @@ async def execute_multi_output_cmd(
         lang=lang,
         output=output_file,
     )
-    proc = await asyncio.wait_for(
-        asyncio.create_subprocess_exec(
-            TESSERACT_CMD,
-            *cmd_args,
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        ),
-        timeout=timeout,
-    )
-    _, stderr = await asyncio.wait_for(proc.communicate(image), timeout=timeout)
-    if proc.returncode != ReturnCode.SUCCESS:
-        raise TesseractRuntimeError(stderr.decode(encoding))
-    return tuple(
-        [f"{output_file}{OUTPUT_FILE_EXTENSIONS[ext]}" for ext in output_format.split()]  # type: ignore
-    )
+    try:
+        proc = None
+        proc = await asyncio.wait_for(
+            asyncio.create_subprocess_exec(
+                TESSERACT_CMD,
+                *cmd_args,
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            ),
+            timeout=timeout,
+        )
+        _, stderr = await asyncio.wait_for(proc.communicate(image), timeout=timeout)
+        if proc.returncode != ReturnCode.SUCCESS:
+            raise TesseractRuntimeError(stderr.decode(encoding))
+        return tuple(
+            [f"{output_file}{OUTPUT_FILE_EXTENSIONS[ext]}" for ext in output_format.split()]  # type: ignore
+        )
+    except asyncio.TimeoutError:
+        raise TesseractRuntimeError("Exceed the timeout")
+    finally:
+        if proc is not None and proc.returncode is None:
+            proc.kill()
 
 
 async def _build_cmd_args(
