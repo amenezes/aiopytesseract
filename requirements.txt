@@ -1,2 +1,2 @@
 aiofiles
-cattrs
+cattrs==1.10.0
