@@ -76,17 +76,22 @@ async def confidence(
     :param oem: ocr engine modes (default: 3)
     :param timeout: command timeout (default: 30)
     """
-    proc = await execute_cmd(f"stdin stdout -l {lang} --dpi {dpi} --psm 0 --oem {oem}")
-    stdout, _ = await asyncio.wait_for(
-        proc.communicate(Path(image).read_bytes()), timeout=timeout
-    )
     try:
+        proc = await execute_cmd(
+            f"stdin stdout -l {lang} --dpi {dpi} --psm 0 --oem {oem}"
+        )
+        stdout, _ = await asyncio.wait_for(
+            proc.communicate(Path(image).read_bytes()), timeout=timeout
+        )
         confidence_value = float(
             re.search(  # type: ignore
                 r"(Script.confidence:.(\d{1,10}.\d{1,10})$)",
                 stdout.decode(encoding),
             ).group(2)
         )
+    except asyncio.TimeoutError:
+        proc.kill()
+        raise RuntimeError("Tesseract process timeout")
     except AttributeError:
         confidence_value = 0.0
     return confidence_value
@@ -108,17 +113,20 @@ async def deskew(
     :param lang: tesseract language. (Format: eng, eng+por, eng+por+fra)
     :param timeout: command timeout (default: 30)
     """
-    proc = await execute_cmd(
-        f"{image} stdout -l {lang} --dpi {dpi} --psm 2 --oem {oem}"
-    )
-    data = await asyncio.wait_for(proc.stderr.read(), timeout=timeout)
     try:
+        proc = await execute_cmd(
+            f"{image} stdout -l {lang} --dpi {dpi} --psm 2 --oem {oem}"
+        )
+        data = await asyncio.wait_for(proc.stderr.read(), timeout=timeout)
         deskew_value = float(
             re.search(  # type: ignore
                 r"(Deskew.angle:.)(\d{1,10}.\d{1,10}$)",
                 data.decode(encoding),
             ).group(2)
         )
+    except asyncio.TimeoutError:
+        proc.kill()
+        raise RuntimeError("Tesseract process timeout")
     except AttributeError:
         deskew_value = 0.0
     return deskew_value
@@ -404,7 +412,7 @@ async def image_to_boxes(
 
 @image_to_boxes.register(str)
 async def _(image: str, timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT) -> List[Box]:
-    await file_exists(image)
+    file_exists(image)
     boxes = await image_to_boxes(Path(image).read_bytes(), timeout)
     return boxes
 
@@ -415,8 +423,14 @@ async def _(
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> List[Box]:
-    proc = await execute_cmd("stdin stdout batch.nochop makebox")
-    stdout, stderr = await asyncio.wait_for(proc.communicate(image), timeout=timeout)
+    try:
+        proc = await execute_cmd("stdin stdout batch.nochop makebox")
+        stdout, stderr = await asyncio.wait_for(
+            proc.communicate(image), timeout=timeout
+        )
+    except asyncio.TimeoutError:
+        proc.kill()
+        raise RuntimeError("Tesseract process timeout")
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))
     data = stdout.decode(encoding)
@@ -447,7 +461,7 @@ async def _(
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> List[Data]:
-    await file_exists(image)
+    file_exists(image)
     data_values = await image_to_data(Path(image).read_bytes(), dpi, timeout)
     return data_values
 
@@ -459,8 +473,14 @@ async def _(
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> List[Data]:
-    proc = await execute_cmd(f"stdin stdout -c tessedit_create_tsv=1 --dpi {dpi}")
-    stdout, stderr = await asyncio.wait_for(proc.communicate(image), timeout=timeout)
+    try:
+        proc = await execute_cmd(f"stdin stdout -c tessedit_create_tsv=1 --dpi {dpi}")
+        stdout, stderr = await asyncio.wait_for(
+            proc.communicate(image), timeout=timeout
+        )
+    except asyncio.TimeoutError:
+        proc.kill()
+        raise RuntimeError("Tesseract process timeout")
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))
     data: str = stdout.decode(encoding)
@@ -498,7 +518,7 @@ async def _(
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> OSD:
-    await file_exists(image)
+    file_exists(image)
     osd = await image_to_osd(Path(image).read_bytes(), dpi, oem, timeout, encoding)
     return osd
 
