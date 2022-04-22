@@ -26,7 +26,6 @@ async def test_tesseract_version(func):
     assert len(version) > 0
 
 
-# run
 @pytest.mark.asyncio
 async def test_run_with_type_not_supported():
     with pytest.raises(NotImplementedError):
@@ -84,3 +83,33 @@ async def test_tesseract_parameters():
     parameters = await aiopytesseract.tesseract_parameters()
     assert isinstance(parameters, list)
     assert isinstance(parameters[0], Parameter)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "func, timeout",
+    [
+        (aiopytesseract.image_to_string, 0.1),
+        (aiopytesseract.image_to_hocr, 0.1),
+        (aiopytesseract.image_to_osd, 0.1),
+        (aiopytesseract.image_to_pdf, 0.1),
+        (aiopytesseract.image_to_data, 0.1),
+        (aiopytesseract.image_to_boxes, 0.1),
+        (aiopytesseract.deskew, 0.01),
+        (aiopytesseract.confidence, 0.1),
+    ],
+)
+async def test_method_timeout(func, timeout):
+    with pytest.raises(RuntimeError):
+        await func("tests/samples/file-sample_150kB.png", timeout=timeout)
+
+
+async def test_run_timeout():
+    with pytest.raises(RuntimeError):
+        async with aiopytesseract.run(
+            Path("tests/samples/file-sample_150kB.png").read_bytes(),
+            "xxx",
+            "alto tsv txt",
+            timeout=0.1,
+        ) as out:
+            print(out)
