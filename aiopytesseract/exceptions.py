@@ -3,12 +3,12 @@ class TesseractError(Exception):
 
     def __init__(self, message: str = ""):
         self.message = message
-    
+
     def __str__(self):
         return self.message
 
 
-class PSMInvalidException(TesseractError):    
+class PSMInvalidException(TesseractError):
     def __init__(self, message="PSM Invalid"):
         super().__init__(message)
 
