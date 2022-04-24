@@ -13,7 +13,7 @@ from .constants import (
     OUTPUT_FILE_EXTENSIONS,
     TESSERACT_CMD,
 )
-from .exceptions import TesseractRuntimeError
+from .exceptions import TesseractRuntimeError, TesseractTimeoutError
 from .returncode import ReturnCode
 from .validators import file_exists, language_is_valid, oem_is_valid, psm_is_valid
 
@@ -120,7 +120,7 @@ async def _(
         )
     except asyncio.TimeoutError:
         proc.kill()
-        raise RuntimeError("Tesseract process timeout")
+        raise TesseractTimeoutError()
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))
     return stdout
@@ -165,7 +165,7 @@ async def execute_multi_output_cmd(
         _, stderr = await asyncio.wait_for(proc.communicate(image), timeout=timeout)
     except asyncio.TimeoutError:
         proc.kill()
-        raise RuntimeError("Tesseract process timeout")
+        raise TesseractTimeoutError()
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))
     return tuple(

@@ -4,6 +4,7 @@ import pytest
 
 import aiopytesseract
 from aiopytesseract.models import Box
+from aiopytesseract.exceptions import TesseractRuntimeError
 
 
 @pytest.mark.asyncio
@@ -26,7 +27,7 @@ async def test_image_to_boxes_with_bytes_image(image):
 
 @pytest.mark.asyncio
 async def test_image_to_boxes_with_invalid():
-    with pytest.raises(RuntimeError):
+    with pytest.raises(TesseractRuntimeError):
         await aiopytesseract.image_to_boxes("tests/samples/file-sample_150kB.pdf")
 
 

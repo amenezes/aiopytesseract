@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 import aiopytesseract
+from aiopytesseract.exceptions import TesseractRuntimeError
 
 
 @pytest.mark.asyncio
@@ -34,7 +35,7 @@ async def test_image_to_string_with_bytes_image_args(image):
 
 @pytest.mark.asyncio
 async def test_image_to_string_with_invalid():
-    with pytest.raises(RuntimeError):
+    with pytest.raises(TesseractRuntimeError):
         await aiopytesseract.image_to_string("tests/samples/file-sample_150kB.pdf")
 
 

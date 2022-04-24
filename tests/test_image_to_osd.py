@@ -4,6 +4,7 @@ import pytest
 
 import aiopytesseract
 from aiopytesseract.models import OSD
+from aiopytesseract.exceptions import TesseractRuntimeError
 
 
 @pytest.mark.asyncio
@@ -35,7 +36,7 @@ async def test_image_to_osd(image):
 
 @pytest.mark.asyncio
 async def test_image_to_osd_with_invalid():
-    with pytest.raises(RuntimeError):
+    with pytest.raises(TesseractRuntimeError):
         await aiopytesseract.image_to_osd("tests/samples/file-sample_150kB.pdf")
 
 
