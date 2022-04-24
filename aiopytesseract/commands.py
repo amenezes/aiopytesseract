@@ -412,7 +412,7 @@ async def image_to_boxes(
 
 @image_to_boxes.register(str)
 async def _(image: str, timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT) -> List[Box]:
-    file_exists(image)
+    await file_exists(image)
     boxes = await image_to_boxes(Path(image).read_bytes(), timeout)
     return boxes
 
@@ -461,7 +461,7 @@ async def _(
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
 ) -> List[Data]:
-    file_exists(image)
+    await file_exists(image)
     data_values = await image_to_data(Path(image).read_bytes(), dpi, timeout)
     return data_values
 
@@ -518,7 +518,7 @@ async def _(
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> OSD:
-    file_exists(image)
+    await file_exists(image)
     osd = await image_to_osd(Path(image).read_bytes(), dpi, oem, timeout, encoding)
     return osd
 

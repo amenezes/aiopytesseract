@@ -1,7 +1,6 @@
 import pytest
 
 from aiopytesseract.constants import (
-    AIOPYTESSERACT_DEFAULT_BUILD_CMD_CACHE,
     AIOPYTESSERACT_DEFAULT_DPI,
     AIOPYTESSERACT_DEFAULT_ENCODING,
     AIOPYTESSERACT_DEFAULT_LANGUAGE,
@@ -26,7 +25,6 @@ from aiopytesseract.constants import (
         (AIOPYTESSERACT_DEFAULT_DPI, 300),
         (AIOPYTESSERACT_DEFAULT_PSM, 3),
         (AIOPYTESSERACT_DEFAULT_OEM, 3),
-        (AIOPYTESSERACT_DEFAULT_BUILD_CMD_CACHE, 1),
     ],
 )
 def test_default_constanst_values(var, expected):

@@ -1,13 +1,12 @@
 import asyncio
 import shlex
 from collections import deque
-from functools import lru_cache, singledispatch
+from functools import singledispatch
 from pathlib import Path
 from typing import Any, List, Optional, Tuple
 
 from ._logger import logger
 from .constants import (
-    AIOPYTESSERACT_DEFAULT_BUILD_CMD_CACHE,
     AIOPYTESSERACT_DEFAULT_ENCODING,
     AIOPYTESSERACT_DEFAULT_TIMEOUT,
     OUTPUT_FILE_EXTENSIONS,
@@ -64,7 +63,7 @@ async def _(
     user_patterns: Optional[str] = None,
     tessdata_dir: Optional[str] = None,
 ) -> bytes:
-    file_exists(image)
+    await file_exists(image)
     response: bytes = await execute(
         Path(image).read_bytes(),
         output_format,
@@ -94,7 +93,7 @@ async def _(
     tessdata_dir: Optional[str] = None,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> bytes:
-    cmd_args = _build_cmd_args(
+    cmd_args = await _build_cmd_args(
         output_extension=output_format,
         dpi=dpi,
         psm=psm,
@@ -140,7 +139,7 @@ async def execute_multi_output_cmd(
     tessdata_dir: Optional[str] = None,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> Tuple[str, ...]:
-    cmd_args = _build_cmd_args(
+    cmd_args = await _build_cmd_args(
         output_extension=output_format,
         dpi=dpi,
         psm=psm,
@@ -173,8 +172,7 @@ async def execute_multi_output_cmd(
     )
 
 
-@lru_cache(maxsize=AIOPYTESSERACT_DEFAULT_BUILD_CMD_CACHE)
-def _build_cmd_args(
+async def _build_cmd_args(
     output_extension: str,
     dpi: int,
     psm: int,
@@ -185,8 +183,7 @@ def _build_cmd_args(
     lang: Optional[str] = None,
     output: str = "stdout",
 ) -> List[str]:
-    psm_is_valid(psm)
-    oem_is_valid(oem)
+    await asyncio.gather(psm_is_valid(psm), oem_is_valid(oem))
 
     cmd_args = deque(
         ["stdin", f"{output}", "--dpi", f"{dpi}", "--psm", f"{psm}", "--oem", f"{oem}"]
@@ -204,7 +201,7 @@ def _build_cmd_args(
         cmd_args.append(tessdata_dir)
 
     if lang:
-        language_is_valid(lang)
+        await language_is_valid(lang)
         cmd_args.append("-l")
         cmd_args.append(lang)
 

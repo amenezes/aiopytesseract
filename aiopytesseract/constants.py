@@ -9,7 +9,6 @@ AIOPYTESSERACT_DEFAULT_LANGUAGE: str = "eng"
 AIOPYTESSERACT_DEFAULT_DPI: int = 300
 AIOPYTESSERACT_DEFAULT_PSM: int = 3
 AIOPYTESSERACT_DEFAULT_OEM: int = 3
-AIOPYTESSERACT_DEFAULT_BUILD_CMD_CACHE: int = 1
 
 # https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html
 TESSERACT_LANGUAGES = {

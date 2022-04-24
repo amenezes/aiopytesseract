@@ -14,7 +14,7 @@ async def test_execute_unsupported(input_data):
 
 @pytest.mark.asyncio
 async def test_build_cmd_args_with_user_patterns():
-    command = aiopytesseract.base_command._build_cmd_args(
+    command = await aiopytesseract.base_command._build_cmd_args(
         "stdout",
         200,
         3,

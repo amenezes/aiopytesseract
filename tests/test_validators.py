@@ -3,44 +3,52 @@ import pytest
 from aiopytesseract import constants, exceptions, validators
 
 
+@pytest.mark.asyncio
 async def test_valid_psm():
     for psm in constants.PAGE_SEGMENTATION_MODES.keys():
-        validators.psm_is_valid(psm)
+        await validators.psm_is_valid(psm)
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize("psm", [-1, 14, "1"])
-def test_invalid_psm(psm):
+async def test_invalid_psm(psm):
     with pytest.raises(exceptions.PSMInvalidException):
-        validators.psm_is_valid(psm)
+        await validators.psm_is_valid(psm)
 
 
-def test_valid_oem():
+@pytest.mark.asyncio
+async def test_valid_oem():
     for oem in constants.OCR_ENGINE_MODES.keys():
-        validators.oem_is_valid(oem)
+        await validators.oem_is_valid(oem)
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize("oem", [-1, 4, "1"])
-def test_invalid_oem(oem):
+async def test_invalid_oem(oem):
     with pytest.raises(exceptions.OEMInvalidException):
-        validators.oem_is_valid(oem)
+        await validators.oem_is_valid(oem)
 
 
-def test_file_exists():
-    validators.file_exists("tests/samples/file-sample_150kB.png")
+@pytest.mark.asyncio
+async def test_file_exists():
+    await validators.file_exists("tests/samples/file-sample_150kB.png")
 
 
-def test_file_does_not_exist():
+@pytest.mark.asyncio
+async def test_file_does_not_exist():
     with pytest.raises(exceptions.NoSuchFileException):
-        validators.file_exists("tests/samples/file-sample_150kB.jpeg")
+        await validators.file_exists("tests/samples/file-sample_150kB.jpeg")
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize("lang", ["por", "por+eng", "por+eng+fra"])
-def test_language_is_valid(lang):
-    resp = validators.language_is_valid(lang)
+async def test_language_is_valid(lang):
+    resp = await validators.language_is_valid(lang)
     assert resp is None
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize("lang", ["por eng", "por:eng", "por-eng", "por+zuul"])
-def test_language_is_invalid(lang):
+async def test_language_is_invalid(lang):
     with pytest.raises(exceptions.LanguageInvalidException):
-        validators.language_is_valid(lang)
+        await validators.language_is_valid(lang)
