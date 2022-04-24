@@ -2,6 +2,15 @@ from .file_format import FileFormat
 
 TESSERACT_CMD: str = "tesseract"
 
+AIOPYTESSERACT_DEFAULT_ENCODING: str = "utf-8"
+AIOPYTESSERACT_DEFAULT_TIMEOUT: float = 30
+AIOPYTESSERACT_DEFAULT_LANGUAGE: str = "eng"
+# https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#rescaling
+AIOPYTESSERACT_DEFAULT_DPI: int = 300
+AIOPYTESSERACT_DEFAULT_PSM: int = 3
+AIOPYTESSERACT_DEFAULT_OEM: int = 3
+AIOPYTESSERACT_DEFAULT_BUILD_CMD_CACHE: int = 1
+
 # https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html
 TESSERACT_LANGUAGES = {
     "afr",
@@ -147,21 +156,12 @@ PAGE_SEGMENTATION_MODES = {
     13: "Raw line. Treat the image as a single text line, bypassing hacks that are Tesseract-specific.",
 }
 
-# https://github.com/tesseract-ocr/tesseract/wiki#linux
 OCR_ENGINE_MODES = {
     0: "Legacy engine only.",
     1: "Neural nets LSTM engine only.",
     2: "Legacy + LSTM engines.",
     3: "Default, based on what is available.",
 }
-
-AIOPYTESSERACT_DEFAULT_ENCODING: str = "utf-8"
-AIOPYTESSERACT_DEFAULT_TIMEOUT: float = 30
-AIOPYTESSERACT_DEFAULT_LANGUAGE: str = "eng"
-AIOPYTESSERACT_DEFAULT_DPI: int = 200
-AIOPYTESSERACT_DEFAULT_PSM: int = 3
-AIOPYTESSERACT_DEFAULT_OEM: int = 3
-AIOPYTESSERACT_DEFAULT_BUILD_CMD_CACHE: int = 1
 
 OUTPUT_FILE_EXTENSIONS = {
     FileFormat.ALTO: ".xml",

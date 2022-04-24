@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 import aiopytesseract
-from aiopytesseract.exceptions import TesseractTimeoutError, TesseractRuntimeError
+from aiopytesseract.exceptions import TesseractRuntimeError, TesseractTimeoutError
 from aiopytesseract.models import Parameter
 
 

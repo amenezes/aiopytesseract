@@ -1,7 +1,7 @@
 class TesseractError(Exception):
     """Base exception for tesseract"""
 
-    def __init__(self, message: str = ""):
+    def __init__(self, message: str = "Tesseract Error"):
         self.message = message
 
     def __str__(self):
@@ -9,12 +9,12 @@ class TesseractError(Exception):
 
 
 class PSMInvalidException(TesseractError):
-    def __init__(self, message="PSM Invalid"):
+    def __init__(self, message="PSM value must be in the range [0 - 13]"):
         super().__init__(message)
 
 
 class OEMInvalidException(TesseractError):
-    def __init__(self, message="OEM Invalid"):
+    def __init__(self, message="OEM value must be in the range [0 - 3]"):
         super().__init__(message)
 
 

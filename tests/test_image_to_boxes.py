@@ -3,8 +3,8 @@ from pathlib import Path
 import pytest
 
 import aiopytesseract
-from aiopytesseract.models import Box
 from aiopytesseract.exceptions import TesseractRuntimeError
+from aiopytesseract.models import Box
 
 
 @pytest.mark.asyncio

@@ -25,7 +25,7 @@ def test_invalid_oem(oem):
         validators.oem_is_valid(oem)
 
 
-async def test_file_exists():
+def test_file_exists():
     validators.file_exists("tests/samples/file-sample_150kB.png")
 
 
@@ -35,12 +35,12 @@ def test_file_does_not_exist():
 
 
 @pytest.mark.parametrize("lang", ["por", "por+eng", "por+eng+fra"])
-async def test_language_is_valid(lang):
+def test_language_is_valid(lang):
     resp = validators.language_is_valid(lang)
     assert resp is None
 
 
 @pytest.mark.parametrize("lang", ["por eng", "por:eng", "por-eng", "por+zuul"])
-async def test_language_is_invalid(lang):
+def test_language_is_invalid(lang):
     with pytest.raises(exceptions.LanguageInvalidException):
         validators.language_is_valid(lang)
