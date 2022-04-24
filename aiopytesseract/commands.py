@@ -20,7 +20,7 @@ from .constants import (
     AIOPYTESSERACT_DEFAULT_TIMEOUT,
     TESSERACT_LANGUAGES,
 )
-from .exceptions import TesseractRuntimeError
+from .exceptions import TesseractRuntimeError, TesseractTimeoutError
 from .file_format import FileFormat
 from .models import OSD, Box, Data, Parameter
 from .returncode import ReturnCode
@@ -91,7 +91,7 @@ async def confidence(
         )
     except asyncio.TimeoutError:
         proc.kill()
-        raise RuntimeError("Tesseract process timeout")
+        raise TesseractTimeoutError()
     except AttributeError:
         confidence_value = 0.0
     return confidence_value
@@ -126,7 +126,7 @@ async def deskew(
         )
     except asyncio.TimeoutError:
         proc.kill()
-        raise RuntimeError("Tesseract process timeout")
+        raise TesseractTimeoutError()
     except AttributeError:
         deskew_value = 0.0
     return deskew_value
@@ -430,7 +430,7 @@ async def _(
         )
     except asyncio.TimeoutError:
         proc.kill()
-        raise RuntimeError("Tesseract process timeout")
+        raise TesseractTimeoutError()
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))
     data = stdout.decode(encoding)
@@ -480,7 +480,7 @@ async def _(
         )
     except asyncio.TimeoutError:
         proc.kill()
-        raise RuntimeError("Tesseract process timeout")
+        raise TesseractTimeoutError()
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))
     data: str = stdout.decode(encoding)
