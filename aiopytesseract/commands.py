@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, AsyncGenerator, List, Optional, Tuple
 
 import cattr
-from aiofiles import tempfile  # type: ignore
+from aiofiles import tempfile
 
 from aiopytesseract.validators import file_exists
 
@@ -28,35 +28,49 @@ from .returncode import ReturnCode
 
 async def languages(
     config: str = "", encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING
-) -> List:
-    """Tesseract available languages."""
+) -> List[str]:
+    """Tesseract available languages.
+
+    :param config: config. (valid values: str)
+    :param encoding: decode bytes to string. (default: utf-8)
+    """
     proc = await execute_cmd(f"--list-langs {config}")
     data = await proc.stdout.read()
-    languages = []
+    langs = []
     for line in data.decode(encoding).split():
         lang = line.strip()
         if lang in TESSERACT_LANGUAGES:
-            languages.append(lang)
-    return languages
+            langs.append(lang)
+    return langs
 
 
 async def get_languages(
     config: str = "", encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING
-) -> List:
-    """Tesseract available languages."""
+) -> List[str]:
+    """Tesseract available languages.
+
+    :param config: config. (valid values: str)
+    :param encoding: decode bytes to string. (default: utf-8)
+    """
     langs = await languages(config, encoding=encoding)
     return langs
 
 
 async def tesseract_version(encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING) -> str:
-    """Tesseract version."""
+    """Tesseract version.
+
+    :param encoding: decode bytes to string. (default: utf-8)
+    """
     proc = await execute_cmd("--version")
     data: bytes = await proc.stdout.readuntil()
     return data.decode(encoding).split()[1]
 
 
 async def get_tesseract_version(encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING) -> str:
-    """Tesseract version."""
+    """Tesseract version.
+
+    :param encoding: decode bytes to string. (default: utf-8)
+    """
     version = await tesseract_version(encoding)
     return version
 
@@ -72,9 +86,11 @@ async def confidence(
     """Get script confidence.
 
     :param image: image input to tesseract. (valid values: str)
-    :param dpi: image dots per inch (DPI)
-    :param oem: ocr engine modes (default: 3)
-    :param timeout: command timeout (default: 30)
+    :param dpi: image dots per inch (DPI). (default: 300)
+    :param lang: tesseract language. (default: eng, format: eng, eng+por, eng+por+fra)
+    :param oem: ocr engine modes. (default: 3)
+    :param timeout: command timeout. (default: 30)
+    :param encoding: decode bytes to string. (default: utf-8)
     """
     try:
         proc = await execute_cmd(
@@ -108,10 +124,11 @@ async def deskew(
     """Get Deskew angle.
 
     :param image: image input to tesseract. (valid values: str)
-    :param dpi: image dots per inch (DPI)
-    :param oem: ocr engine modes (default: 3)
-    :param lang: tesseract language. (Format: eng, eng+por, eng+por+fra)
-    :param timeout: command timeout (default: 30)
+    :param dpi: image dots per inch (DPI). (default: 300)
+    :param lang: tesseract language. (default: eng, format: eng, eng+por, eng+por+fra)
+    :param oem: ocr engine modes. (default: 3)
+    :param timeout: command timeout. (default: 30)
+    :param encoding: decode bytes to string. (default: utf-8)
     """
     try:
         proc = await execute_cmd(
@@ -137,14 +154,16 @@ async def tesseract_parameters(
 ) -> List[Parameter]:
     """List of all Tesseract parameters with default value and short description.
 
-    reference: https://tesseract-ocr.github.io/tessdoc/tess3/ControlParams.html
+    - reference: https://tesseract-ocr.github.io/tessdoc/tess3/ControlParams.html
+
+    :param encoding: decode bytes to string. (default: utf-8)
     """
     proc = await execute_cmd("--print-parameters")
     raw_data: bytes = await proc.stdout.read()
     data = raw_data.decode(encoding)
     params = []
     for line in data.split("\n"):
-        param = re.search(r"(\w+)\s+(-?\d+.?\d{0,})\s+(.*)[^\n]$", line)
+        param = re.search(r"(\w+)\s+(-?\d+.?\d*)\s+(.*)[^\n]$", line)
         if param:
             params.append(
                 cattr.structure_attrs_fromtuple(
@@ -169,13 +188,14 @@ async def image_to_string(
     """Extract string from an image.
 
     :param image: image input to tesseract. (valid values: str, bytes)
-    :param user_words: location of user words file
-    :param user_patterns: location of user patterns file
-    :param dpi: image dots per inch (DPI)
-    :param lang: tesseract language. (Format: eng, eng+por, eng+por+fra)
-    :param psm: page segmentation modes (default: 3)
-    :param oem: ocr engine modes (default: 3)
-    :param timeout: command timeout (default: 30)
+    :param user_words: location of user words file. (default: None)
+    :param user_patterns: location of user patterns file. (default: None)
+    :param tessdata_dir: location of tessdata path. (default: None)
+    :param dpi: image dots per inch (DPI). (default: 300)
+    :param lang: tesseract language. (default: eng, format: eng, eng+por, eng+por+fra)
+    :param psm: page segmentation modes. (default: 3)
+    :param oem: ocr engine modes. (default: 3)
+    :param timeout: command timeout. (default: 30)
     """
     raise NotImplementedError(f"Type {type(image)} not supported.")
 
@@ -251,10 +271,11 @@ async def image_to_hocr(
     """HOCR
 
     :param image: image input to tesseract. (valid values: str, bytes)
-    :param user_words: location of user words file
-    :param user_patterns: location of user patterns file
-    :param dpi: image dots per inch (DPI)
-    :param lang: tesseract language. (Format: eng, eng+por, eng+por+fra)
+    :param user_words: location of user words file. (default: None)
+    :param user_patterns: location of user patterns file. (default: None)
+    :param tessdata_dir: location of tessdata path. (default: None)
+    :param dpi: image dots per inch (DPI). (default: 300)
+    :param lang: tesseract language. (default: eng, format: eng, eng+por, eng+por+fra)
     :param psm: page segmentation modes (default: 3)
     :param oem: ocr engine modes (default: 3)
     :param timeout: command timeout (default: 30)
@@ -333,13 +354,14 @@ async def image_to_pdf(
     """Generate a searchable PDF from an image.
 
     :param image: image input to tesseract. (valid values: str, bytes)
-    :param user_words: location of user words file
-    :param user_patterns: location of user patterns file
-    :param dpi: image dots per inch (DPI)
-    :param lang: tesseract language. (Format: eng, eng+por, eng+por+fra)
+    :param dpi: image dots per inch (DPI). (default: 300)
+    :param lang: tesseract language. (default: eng, format: eng, eng+por, eng+por+fra)
     :param psm: page segmentation modes (default: 3)
     :param oem: ocr engine modes (default: 3)
     :param timeout: command timeout (default: 30)
+    :param user_words: location of user words file. (default: None)
+    :param user_patterns: location of user patterns file. (default: None)
+    :param tessdata_dir: location of tessdata path. (default: None)
     """
     raise NotImplementedError
 
@@ -450,7 +472,8 @@ async def image_to_data(
     """Information about boxes, confidences, line and page numbers.
 
     :param image: image input to tesseract. (valid values: str, bytes)
-    :param dpi: image dots per inch (DPI)
+    :param dpi: image dots per inch (DPI). (default: 300)
+    :param timeout: command timeout (default: 30)
     """
     raise NotImplementedError
 
@@ -503,9 +526,10 @@ async def image_to_osd(
     """Information about orientation and script detection.
 
     :param image: image input to tesseract. (valid values: str, bytes)
-    :param dpi: image dots per inch (DPI)
-    :param oem: ocr engine modes (default: 3)
-    :param timeout: command timeout (default: 30)
+    :param dpi: image dots per inch (DPI). (default: 300)
+    :param oem: ocr engine modes. (default: 3)
+    :param timeout: command timeout. (default: 30)
+    :param encoding: decode bytes to string. (default: utf-8)
     """
     raise NotImplementedError
 
@@ -534,7 +558,7 @@ async def _(
     data = await execute(image, FileFormat.OSD, dpi, None, 0, oem, timeout)
     osd = cattr.structure_attrs_fromtuple(
         re.findall(  # type: ignore
-            r"\w+\s?\:\s{0,}(\d+.?\d{0,}|\w+)",
+            r"\w+\s?:\s*(\d+.?\d*|\w+)",
             data.decode(encoding),
         ),
         OSD,
@@ -564,13 +588,16 @@ async def run(
     - https://github.com/tesseract-ocr/tesseract/blob/main/doc/tesseract.1.asc#inout-arguments
 
     :param image: image input to tesseract. (valid values: str, bytes)
-    :param user_words: location of user words file
-    :param user_patterns: location of user patterns file
-    :param dpi: image dots per inch (DPI)
-    :param lang: tesseract language. (Format: eng, eng+por, eng+por+fra)
-    :param psm: page segmentation modes (default: 3)
-    :param oem: ocr engine modes (default: 3)
-    :param timeout: command timeout (default: 30)
+    :param output_filename: base filename.
+    :param output_format: output file extensions.
+    :param dpi: image dots per inch (DPI). (default: 300)
+    :param lang: tesseract language. (default: eng, format: eng, eng+por, eng+por+fra)
+    :param psm: page segmentation modes. (default: 3)
+    :param oem: ocr engine modes. (default: 3)
+    :param timeout: command timeout. (default: 30)
+    :param user_words: location of user words file. (default: None)
+    :param user_patterns: location of user patterns file. (default: None)
+    :param tessdata_dir: location of tessdata path. (default: None)
     """
     if not isinstance(image, bytes):
         raise NotImplementedError

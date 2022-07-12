@@ -13,27 +13,89 @@ async def test_execute_unsupported(input_data):
 
 
 @pytest.mark.asyncio
-async def test_build_cmd_args_with_user_patterns():
-    command = await aiopytesseract.base_command._build_cmd_args(
-        "stdout",
-        200,
-        3,
-        3,
-        user_patterns="tests/samples/user_patterns.txt",
-        tessdata_dir="/tesser-test-data",
-    )
-    assert command == [
-        "stdin",
-        "stdout",
-        "--dpi",
-        "200",
-        "--psm",
-        "3",
-        "--oem",
-        "3",
-        "--user-patterns",
-        "tests/samples/user_patterns.txt",
-        "--tessdata-dir",
-        "/tesser-test-data",
-        "stdout",
-    ]
+@pytest.mark.parametrize(
+    "args, expected",
+    [
+        (
+            [
+                "stdout",
+                200,
+                3,
+                1,
+                None,
+                "tests/samples/user_patterns.txt",
+                "/tessdata-test",
+            ],
+            [
+                "--tessdata-dir",
+                "/tessdata-test",
+                "--user-patterns",
+                "tests/samples/user_patterns.txt",
+                "stdin",
+                "stdout",
+                "--dpi",
+                "200",
+                "--psm",
+                "3",
+                "--oem",
+                "1",
+                "stdout",
+            ],
+        ),
+        (
+            ["stdout", 300, 3, 3],
+            ["stdin", "stdout", "--dpi", "300", "--psm", "3", "--oem", "3", "stdout"],
+        ),
+        (
+            ["stdout", 300, 3, 3, "tests/samples/user_words.txt"],
+            [
+                "--user-words",
+                "tests/samples/user_words.txt",
+                "stdin",
+                "stdout",
+                "--dpi",
+                "300",
+                "--psm",
+                "3",
+                "--oem",
+                "3",
+                "stdout",
+            ],
+        ),
+        (
+            ["stdout", 300, 3, 3, None, None, "tessdata"],
+            [
+                "--tessdata-dir",
+                "tessdata",
+                "stdin",
+                "stdout",
+                "--dpi",
+                "300",
+                "--psm",
+                "3",
+                "--oem",
+                "3",
+                "stdout",
+            ],
+        ),
+        (
+            ["stdout", 300, 3, 3, None, None, None, "por+lat"],
+            [
+                "stdin",
+                "stdout",
+                "--dpi",
+                "300",
+                "--psm",
+                "3",
+                "--oem",
+                "3",
+                "-l",
+                "por+lat",
+                "stdout",
+            ],
+        ),
+    ],
+)
+async def test_build_cmd_args_with_user_patterns(args, expected):
+    command = await aiopytesseract.base_command._build_cmd_args(*args)
+    assert command == expected

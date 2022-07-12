@@ -184,21 +184,23 @@ async def _build_cmd_args(
     output: str = "stdout",
 ) -> List[str]:
     await asyncio.gather(psm_is_valid(psm), oem_is_valid(oem))
+    # OCR options must occur before any configfile.
+    # for details type: tesseract --help-extra
 
     cmd_args = deque(
         ["stdin", f"{output}", "--dpi", f"{dpi}", "--psm", f"{psm}", "--oem", f"{oem}"]
     )
-    if user_words:
-        cmd_args.append("--user-words")
-        cmd_args.append(user_words)
-
     if user_patterns:
-        cmd_args.append("--user-patterns")
-        cmd_args.append(user_patterns)
+        cmd_args.appendleft(user_patterns)
+        cmd_args.appendleft("--user-patterns")
+
+    if user_words:
+        cmd_args.appendleft(user_words)
+        cmd_args.appendleft("--user-words")
 
     if tessdata_dir:
-        cmd_args.append("--tessdata-dir")
-        cmd_args.append(tessdata_dir)
+        cmd_args.appendleft(tessdata_dir)
+        cmd_args.appendleft("--tessdata-dir")
 
     if lang:
         await language_is_valid(lang)
