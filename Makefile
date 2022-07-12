@@ -37,7 +37,7 @@ about:
 	@echo "> aiopytesseract: $(VERSION)"
 	@echo ""
 	@echo "make lint         - Runs: [isort > black > flake8 > mypy]"
-	@echo "make tests        - Execute tests."
+	@echo "make tests        - Runs: tests."
 	@echo "make ci           - Runs: [lint > tests]"
 	@echo "make tox          - Runs tox."
 	@echo "make docs         - Generate project documentation."
