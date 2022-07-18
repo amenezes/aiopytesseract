@@ -1,6 +1,5 @@
 import asyncio
 import base64
-import logging
 import tempfile
 
 import streamlit as st
@@ -11,7 +10,6 @@ from aiopytesseract.constants import (AIOPYTESSERACT_DEFAULT_TIMEOUT,
                                       PAGE_SEGMENTATION_MODES,
                                       TESSERACT_LANGUAGES)
 
-logging.basicConfig(level=logging.DEBUG)
 loop = asyncio.new_event_loop()
 loop.set_debug(True)
 
@@ -38,7 +36,7 @@ operation = st.sidebar.selectbox(
         "Parameters"
     ),
 )
-dpi = st.sidebar.number_input("DPI", min_value=1, value=200)
+dpi = st.sidebar.number_input("DPI", min_value=1, value=300)
 lang = st.sidebar.multiselect("Language", TESSERACT_LANGUAGES, default=["eng"])
 psm = st.sidebar.slider(
     "PSM",
@@ -53,7 +51,12 @@ oem = st.sidebar.slider(
     value=3,
 )
 timeout = st.sidebar.text_input("Timeout", value=AIOPYTESSERACT_DEFAULT_TIMEOUT)
-image = st.sidebar.file_uploader("Attach image")
+tessdata_dir = st.sidebar.text_input("tessdata-dir", value="")
+image = st.sidebar.file_uploader(
+    "Attach image",
+    accept_multiple_files=False,
+    type=['jpeg', 'jpg', 'png']
+)
 if st.sidebar.button("Execute"):
     with st.spinner("Processing..."):
         match operation:
@@ -140,11 +143,9 @@ if st.sidebar.button("Execute"):
                     tmpfile.seek(0)
                     deskew = loop.run_until_complete(
                         aiopytesseract.deskew(
-                            tmpfile.name, dpi=dpi, lang="+".join(lang), oem=oem
+                            tmpfile.name, dpi=dpi, lang="+".join(lang), oem=oem, tessdata_dir=tessdata_dir
                         )
                     )
-                if not deskew:
-                    st.error("Deskew it's empty")
                 st.markdown(f"""### Result: {deskew}""")
             case "Parameters":
                 params = loop.run_until_complete(
