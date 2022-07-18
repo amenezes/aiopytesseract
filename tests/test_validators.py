@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from aiopytesseract import constants, exceptions, validators
@@ -47,7 +49,10 @@ async def test_language_is_valid(lang):
     assert resp is None
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize("lang", ["por eng", "por:eng", "por-eng", "por+zuul"])
 async def test_language_is_invalid(lang):
+    await asyncio.sleep(0.5)
     with pytest.raises(exceptions.LanguageInvalidException):
         await validators.language_is_valid(lang)
+
