@@ -47,7 +47,6 @@ async def test_language_is_valid(lang):
     assert resp is None
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("lang", ["por eng", "por:eng", "por-eng", "por+zuul"])
 async def test_language_is_invalid(lang):
     with pytest.raises(exceptions.LanguageInvalidException):
