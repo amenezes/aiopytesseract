@@ -6,7 +6,6 @@ import aiopytesseract
 from aiopytesseract.exceptions import TesseractRuntimeError
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("image", ["tests/samples/file-sample_150kB.png"])
 async def test_image_to_string_with_str_image(image):
     text = await aiopytesseract.image_to_string(image)
@@ -14,7 +13,6 @@ async def test_image_to_string_with_str_image(image):
     assert len(text) >= 90
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("image", ["tests/samples/file-sample_150kB.png"])
 async def test_image_to_string_with_bytes_image(image):
     text = await aiopytesseract.image_to_string(Path(image).read_bytes())
@@ -22,7 +20,6 @@ async def test_image_to_string_with_bytes_image(image):
     assert len(text) >= 90
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("image", ["tests/samples/file-sample_150kB.png"])
 async def test_image_to_string_with_bytes_image_args(image):
     text = await aiopytesseract.image_to_string(
@@ -33,13 +30,11 @@ async def test_image_to_string_with_bytes_image_args(image):
     assert len(text) >= 90
 
 
-@pytest.mark.asyncio
 async def test_image_to_string_with_invalid():
     with pytest.raises(TesseractRuntimeError):
         await aiopytesseract.image_to_string("tests/samples/file-sample_150kB.pdf")
 
 
-@pytest.mark.asyncio
 async def test_image_to_string_with_type_not_supported():
     with pytest.raises(NotImplementedError):
         await aiopytesseract.image_to_string(None)

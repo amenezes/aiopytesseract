@@ -7,7 +7,6 @@ from aiopytesseract.exceptions import TesseractRuntimeError, TesseractTimeoutErr
 from aiopytesseract.models import Parameter
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "func", [aiopytesseract.languages, aiopytesseract.get_languages]
 )
@@ -17,7 +16,6 @@ async def test_languages(func):
     assert len(languages) > 0
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "func", [aiopytesseract.tesseract_version, aiopytesseract.get_tesseract_version]
 )
@@ -27,7 +25,6 @@ async def test_tesseract_version(func):
     assert len(version) > 0
 
 
-@pytest.mark.asyncio
 async def test_run_with_type_not_supported():
     with pytest.raises(NotImplementedError):
         async with aiopytesseract.run(
@@ -36,7 +33,6 @@ async def test_run_with_type_not_supported():
             print(output)
 
 
-@pytest.mark.asyncio
 async def test_run_with_bytes_image():
     async with aiopytesseract.run(
         Path("tests/samples/file-sample_150kB.png").read_bytes(),
@@ -53,7 +49,6 @@ async def test_run_with_bytes_image():
     assert not Path(pdf_file).exists()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "image_file, expected",
     [
@@ -66,7 +61,6 @@ async def test_confidence(image_file, expected):
     assert confidence == expected
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "image_file, expected",
     [
@@ -79,14 +73,12 @@ async def test_deskew(image_file, expected):
     assert deskew == expected
 
 
-@pytest.mark.asyncio
 async def test_tesseract_parameters():
     parameters = await aiopytesseract.tesseract_parameters()
     assert isinstance(parameters, list)
     assert isinstance(parameters[0], Parameter)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "func, timeout",
     [

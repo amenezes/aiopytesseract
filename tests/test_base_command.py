@@ -3,7 +3,6 @@ import pytest
 import aiopytesseract
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("input_data", [[], {}, (), None])
 async def test_execute_unsupported(input_data):
     with pytest.raises(NotImplementedError):
@@ -12,7 +11,6 @@ async def test_execute_unsupported(input_data):
         )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "args, expected",
     [
