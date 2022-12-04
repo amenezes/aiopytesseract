@@ -7,7 +7,6 @@ from aiopytesseract.exceptions import TesseractRuntimeError
 from aiopytesseract.models import OSD
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("image", ["tests/samples/file-sample_150kB.png"])
 async def test_image_to_osd_with_str_image(image):
     osd = await aiopytesseract.image_to_osd(image)
@@ -20,7 +19,6 @@ async def test_image_to_osd_with_str_image(image):
     assert isinstance(osd.script_confidence, float)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("image", ["tests/samples/file-sample_150kB.png"])
 async def test_image_to_osd(image):
     osd = await aiopytesseract.image_to_osd(Path(image).read_bytes())
@@ -34,13 +32,11 @@ async def test_image_to_osd(image):
     assert isinstance(osd.script_confidence, float)
 
 
-@pytest.mark.asyncio
 async def test_image_to_osd_with_invalid():
     with pytest.raises(TesseractRuntimeError):
         await aiopytesseract.image_to_osd("tests/samples/file-sample_150kB.pdf")
 
 
-@pytest.mark.asyncio
 async def test_image_to_osd_with_type_not_supported():
     with pytest.raises(NotImplementedError):
         await aiopytesseract.image_to_osd(None)

@@ -1,12 +1,9 @@
 from pathlib import Path
 
-from .constants import OCR_ENGINE_MODES, PAGE_SEGMENTATION_MODES, TESSERACT_LANGUAGES
-from .exceptions import (
-    LanguageInvalidException,
-    NoSuchFileException,
-    OEMInvalidException,
-    PSMInvalidException,
-)
+from .constants import (OCR_ENGINE_MODES, PAGE_SEGMENTATION_MODES,
+                        TESSERACT_LANGUAGES)
+from .exceptions import (LanguageInvalidException, NoSuchFileException,
+                         OEMInvalidException, PSMInvalidException)
 
 
 async def psm_is_valid(psm: int) -> None:

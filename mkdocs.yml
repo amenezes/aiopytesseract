@@ -1,0 +1,42 @@
+site_name: aiopytesseract
+repo_url: https://github.com/amenezes/aiopytesseract
+repo_name: amenezes/aiopytesseract
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.top
+    - navigation.prune
+    - toc.integrate 
+    - search.highlight
+    - search.suggest
+    - search.share
+    - content.code.annotate
+    - content.tooltips
+    - toc.follow
+  palette:
+    - scheme: default
+      primary: blue grey
+      accent: indigo
+      toggle:
+        icon: material/lightbulb-on
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue grey
+      accent: indigo
+      toggle:
+        icon: material/lightbulb
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github-alt
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/amenezes/aiopytesseract
+    - icon: fontawesome/solid/bug
+      link: https://github.com/amenezes/aiopytesseract/issues
+    - icon: fontawesome/solid/envelope
+      link: mailto:alexandre.fmenezes@gmail.com
+nav:
+- Best practices: best-practices.md
+- Development: development.md

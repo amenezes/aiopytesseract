@@ -4,8 +4,8 @@ VERSION := $(shell cat aiopytesseract/__init__.py | grep '__version__ ' | cut -d
 lint:
 ifeq ($(SKIP_STYLE), )
 	@echo "> running isort..."
-	isort aiopytesseract/
-	isort tests/
+	isort aiopytesseract
+	isort tests
 	isort examples
 	@echo "> running black..."
 	black aiopytesseract
@@ -23,11 +23,13 @@ tests:
 
 docs:
 	@echo "> generate project documentation..."
-	portray server
+	@cp README.md docs/index.md
+	mkdocs serve
 
 install-deps:
 	@echo "> installing dependencies..."
 	pip install -r requirements-dev.txt
+	pre-commit install
 
 tox:
 	@echo "> running tox..."
@@ -47,16 +49,10 @@ about:
 
 ci: lint tests
 ifeq ($(GITHUB_HEAD_REF), false)
-	@echo "> download CI dependencies"
-	curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-	chmod +x ./cc-test-reporter
 	@echo "> uploading report..."
 	codecov --file coverage.xml -t $$CODECOV_TOKEN
-	./cc-test-reporter format-coverage -t coverage.py -o codeclimate.json
-	./cc-test-reporter upload-coverage -i codeclimate.json -r $$CC_TEST_REPORTER_ID
 endif
 
 all: install-deps ci
-
 
 .PHONY: lint tests ci docs install-deps tox all
