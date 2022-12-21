@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
@@ -14,4 +14,4 @@ class Data:
     width: int
     height: int
     conf: float
-    text: str = ""
+    text: str = field(default="")

@@ -3,7 +3,7 @@ import re
 from contextlib import asynccontextmanager
 from functools import singledispatch
 from pathlib import Path
-from typing import Any, AsyncGenerator, List, Optional, Tuple
+from typing import AsyncGenerator, List, Optional, Tuple, Union
 
 import cattr
 from aiofiles import tempfile
@@ -181,7 +181,7 @@ async def tesseract_parameters(
 
 @singledispatch
 async def image_to_string(
-    image: Any,
+    image: Union[str, bytes],
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
     tessdata_dir: Optional[str] = None,
@@ -264,7 +264,7 @@ async def _(
 
 @singledispatch
 async def image_to_hocr(
-    image: Any,
+    image: Union[str, bytes],
     user_words: Optional[str] = None,
     user_patterns: Optional[str] = None,
     tessdata_dir: Optional[str] = None,
@@ -347,7 +347,7 @@ async def _(
 
 @singledispatch
 async def image_to_pdf(
-    image: Any,
+    image: Union[str, bytes],
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
@@ -428,7 +428,7 @@ async def _(
 
 @singledispatch
 async def image_to_boxes(
-    image: Any,
+    image: Union[str, bytes],
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     tessdata_dir: Optional[str] = None,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
@@ -492,7 +492,7 @@ async def _(
 
 @singledispatch
 async def image_to_data(
-    image: Any,
+    image: Union[str, bytes],
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
@@ -560,7 +560,7 @@ async def _(
 
 @singledispatch
 async def image_to_osd(
-    image: Any,
+    image: Union[str, bytes],
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,

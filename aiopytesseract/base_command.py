@@ -3,16 +3,18 @@ import shlex
 from collections import deque
 from functools import singledispatch
 from pathlib import Path
-from typing import Any, List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 from ._logger import logger
-from .constants import (AIOPYTESSERACT_DEFAULT_ENCODING,
-                        AIOPYTESSERACT_DEFAULT_TIMEOUT, OUTPUT_FILE_EXTENSIONS,
-                        TESSERACT_CMD)
+from .constants import (
+    AIOPYTESSERACT_DEFAULT_ENCODING,
+    AIOPYTESSERACT_DEFAULT_TIMEOUT,
+    OUTPUT_FILE_EXTENSIONS,
+    TESSERACT_CMD,
+)
 from .exceptions import TesseractRuntimeError, TesseractTimeoutError
 from .returncode import ReturnCode
-from .validators import (file_exists, language_is_valid, oem_is_valid,
-                         psm_is_valid)
+from .validators import file_exists, language_is_valid, oem_is_valid, psm_is_valid
 
 
 async def execute_cmd(cmd_args: str, timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT):
@@ -34,7 +36,7 @@ async def execute_cmd(cmd_args: str, timeout: float = AIOPYTESSERACT_DEFAULT_TIM
 
 @singledispatch
 async def execute(
-    image: Any,
+    image: Union[str, bytes],
     output_format: str,
     dpi: int,
     psm: int,
