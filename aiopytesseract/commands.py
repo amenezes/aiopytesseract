@@ -498,6 +498,7 @@ async def image_to_data(
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
     tessdata_dir: Optional[str] = None,
+    psm: int = AIOPYTESSERACT_DEFAULT_PSM,
 ) -> List[Data]:
     """Information about boxes, confidences, line and page numbers.
 
@@ -507,6 +508,7 @@ async def image_to_data(
     :param timeout: command timeout (default: 30)
     :param encoding: decode bytes to string. (default: utf-8)
     :param tessdata_dir: location of tessdata path. (default: None)
+    :param psm: page segmentation modes. (default: 3)
     """
     raise NotImplementedError
 
@@ -519,10 +521,11 @@ async def _(
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
     tessdata_dir: Optional[str] = None,
+    psm: int = AIOPYTESSERACT_DEFAULT_PSM,
 ) -> List[Data]:
     await file_exists(image)
     data_values = await image_to_data(
-        Path(image).read_bytes(), dpi, lang, timeout, encoding, tessdata_dir
+        Path(image).read_bytes(), dpi, lang, timeout, encoding, tessdata_dir, psm
     )
     return data_values
 
@@ -535,8 +538,9 @@ async def _(
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
     tessdata_dir: Optional[str] = None,
+    psm: int = AIOPYTESSERACT_DEFAULT_PSM,
 ) -> List[Data]:
-    cmdline = f"stdin stdout -c tessedit_create_tsv=1 --dpi {dpi} -l {lang}"
+    cmdline = f"stdin stdout -c tessedit_create_tsv=1 --dpi {dpi} -l {lang} --psm {psm}"
     if tessdata_dir:
         cmdline = f"--tessdata-dir {tessdata_dir} {cmdline}"
     try:
