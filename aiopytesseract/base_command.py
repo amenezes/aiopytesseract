@@ -168,7 +168,7 @@ async def execute_multi_output_cmd(
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))
     return tuple(
-        [f"{output_file}{OUTPUT_FILE_EXTENSIONS[ext]}" for ext in output_format.split()]  # type: ignore
+        [f"{output_file}{OUTPUT_FILE_EXTENSIONS[ext]}" for ext in output_format.split()]
     )
 
 

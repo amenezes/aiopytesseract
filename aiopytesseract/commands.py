@@ -31,7 +31,7 @@ async def languages(
 ) -> List[str]:
     """Tesseract available languages.
 
-    :param config: config. (valid values: str)
+    :param config: config. (valid values: str, default: "")
     :param encoding: decode bytes to string. (default: utf-8)
     """
     proc = await execute_cmd(f"--list-langs {config}")
@@ -49,7 +49,7 @@ async def get_languages(
 ) -> List[str]:
     """Tesseract available languages.
 
-    :param config: config. (valid values: str)
+    :param config: config. (valid values: str, default: "")
     :param encoding: decode bytes to string. (default: utf-8)
     """
     langs = await languages(config, encoding=encoding)

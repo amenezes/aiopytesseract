@@ -5,10 +5,12 @@ import tempfile
 import streamlit as st
 
 import aiopytesseract
-from aiopytesseract.constants import (AIOPYTESSERACT_DEFAULT_TIMEOUT,
-                                      OCR_ENGINE_MODES,
-                                      PAGE_SEGMENTATION_MODES,
-                                      TESSERACT_LANGUAGES)
+from aiopytesseract.constants import (
+    AIOPYTESSERACT_DEFAULT_TIMEOUT,
+    OCR_ENGINE_MODES,
+    PAGE_SEGMENTATION_MODES,
+    TESSERACT_LANGUAGES,
+)
 
 loop = asyncio.new_event_loop()
 loop.set_debug(True)

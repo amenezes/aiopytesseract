@@ -1,24 +1,25 @@
-# Development
+## Setting up the development environment
 
-## Install development dependencies
+### Installing Development Dependencies
 
 ```bash
 make install-deps
 ```
 
-> OR: pip install -r requirements-dev.txt
+### Running Lint Checks
 
-## Execute tests
+```bash
+make lint
+```
+
+### Running Tests
 
 ```bash
 make tests
 ```
 
-> OR: pytest
-
-## Generating documentation locally.
+### Documentation generation
 
 ```bash
-pip install 'aiopytesseract[docs]'
-make docs
+make docs # local server
 ```

@@ -89,23 +89,16 @@ async with aiopytesseract.run(
 	alto_file, tsv_file, txt_file = resp
 ```
 
+For more details on Tesseract best practices and the aiopytesseract, see the folder: `docs`.
+
 ## Examples
 
 If you want to test **aiopytesseract** easily, can you use some options like:
 
-- docker
-- docker-compose
+- docker/docker-compose
 - [streamlit](https://streamlit.io)
 
-### Docker
-
-Just copy and paste the following line.
-
-```bash
-docker run --rm --name aiopytesseract -p 8501:8501 amenezes/aiopytesseract
-```
-
-### docker-compose
+### Docker / docker-compose
 
 After clone this repo run the command below:
 
@@ -117,8 +110,14 @@ docker-compose up -d
 
 For this option it's necessary first install `aiopytesseract` and `streamlit`, after execute:
 
-```python
+``` py
+# remote option:
 streamlit run https://github.com/amenezes/aiopytesseract/blob/master/examples/streamlit/app.py
+```
+
+``` py
+# local option:
+streamlit run examples/streamlit/app.py
 ```
 
 > note: The streamlit example need **python >= 3.10**
@@ -128,4 +127,4 @@ streamlit run https://github.com/amenezes/aiopytesseract/blob/master/examples/st
 - License: [Apache License](https://choosealicense.com/licenses/apache-2.0/)
 - Code: [https://github.com/amenezes/aiopytesseract](https://github.com/amenezes/aiopytesseract)
 - Issue tracker: [https://github.com/amenezes/aiopytesseract/issues](https://github.com/amenezes/aiopytesseract/issues)
-- Docs: [https://aiopytesseract.amenezes.net](https://github.com/amenezes/aiopytesseract)
+- Docs: [https://github.com/amenezes/aiopytesseract](https://github.com/amenezes/aiopytesseract)

@@ -24,7 +24,7 @@ tests:
 docs:
 	@echo "> generate project documentation..."
 	@cp README.md docs/index.md
-	mkdocs serve
+	mkdocs serve -a 0.0.0.0:8000
 
 install-deps:
 	@echo "> installing dependencies..."
