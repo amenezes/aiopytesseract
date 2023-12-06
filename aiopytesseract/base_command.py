@@ -1,9 +1,10 @@
 import asyncio
 import shlex
+from asyncio.subprocess import Process
 from collections import deque
 from functools import singledispatch
 from pathlib import Path
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Tuple, Union
 
 from ._logger import logger
 from .constants import (
@@ -17,7 +18,9 @@ from .returncode import ReturnCode
 from .validators import file_exists, language_is_valid, oem_is_valid, psm_is_valid
 
 
-async def execute_cmd(cmd_args: str, timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT):
+async def execute_cmd(
+    cmd_args: str, timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT
+) -> Process:
     logger.debug(
         f"aiopytesseract command: '{TESSERACT_CMD} {shlex.join(shlex.split(cmd_args))}'"
     )
@@ -31,6 +34,8 @@ async def execute_cmd(cmd_args: str, timeout: float = AIOPYTESSERACT_DEFAULT_TIM
         ),
         timeout=timeout,
     )
+    if proc is None:
+        raise TesseractRuntimeError()
     return proc
 
 
@@ -42,10 +47,10 @@ async def execute(
     psm: int,
     oem: int,
     timeout: float,
-    lang: Optional[str] = None,
-    user_words: Optional[str] = None,
-    user_patterns: Optional[str] = None,
-    tessdata_dir: Optional[str] = None,
+    lang: Union[None, str] = None,
+    user_words: Union[None, str] = None,
+    user_patterns: Union[None, str] = None,
+    tessdata_dir: Union[None, str] = None,
 ) -> bytes:
     raise NotImplementedError
 
@@ -58,10 +63,10 @@ async def _(
     psm: int,
     oem: int,
     timeout: float,
-    lang: Optional[str] = None,
-    user_words: Optional[str] = None,
-    user_patterns: Optional[str] = None,
-    tessdata_dir: Optional[str] = None,
+    lang: Union[None, str] = None,
+    user_words: Union[None, str] = None,
+    user_patterns: Union[None, str] = None,
+    tessdata_dir: Union[None, str] = None,
 ) -> bytes:
     await file_exists(image)
     response: bytes = await execute(
@@ -84,13 +89,13 @@ async def _(
     image: bytes,
     output_format: str,
     dpi: int,
-    lang: Optional[str],
+    lang: Union[None, str],
     psm: int,
     oem: int,
     timeout: float,
-    user_words: Optional[str] = None,
-    user_patterns: Optional[str] = None,
-    tessdata_dir: Optional[str] = None,
+    user_words: Union[None, str] = None,
+    user_patterns: Union[None, str] = None,
+    tessdata_dir: Union[None, str] = None,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> bytes:
     cmd_args = await _build_cmd_args(
@@ -134,9 +139,9 @@ async def execute_multi_output_cmd(
     psm: int,
     oem: int,
     timeout: float,
-    user_words: Optional[str] = None,
-    user_patterns: Optional[str] = None,
-    tessdata_dir: Optional[str] = None,
+    user_words: Union[None, str] = None,
+    user_patterns: Union[None, str] = None,
+    tessdata_dir: Union[None, str] = None,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> Tuple[str, ...]:
     cmd_args = await _build_cmd_args(
@@ -168,7 +173,7 @@ async def execute_multi_output_cmd(
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))
     return tuple(
-        [f"{output_file}{OUTPUT_FILE_EXTENSIONS[ext]}" for ext in output_format.split()]  # type: ignore
+        [f"{output_file}{OUTPUT_FILE_EXTENSIONS[ext]}" for ext in output_format.split()]
     )
 
 
@@ -177,10 +182,10 @@ async def _build_cmd_args(
     dpi: int,
     psm: int,
     oem: int,
-    user_words: Optional[str] = None,
-    user_patterns: Optional[str] = None,
-    tessdata_dir: Optional[str] = None,
-    lang: Optional[str] = None,
+    user_words: Union[None, str] = None,
+    user_patterns: Union[None, str] = None,
+    tessdata_dir: Union[None, str] = None,
+    lang: Union[None, str] = None,
     output: str = "stdout",
 ) -> List[str]:
     await asyncio.gather(psm_is_valid(psm), oem_is_valid(oem))

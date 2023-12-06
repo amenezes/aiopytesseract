@@ -1,3 +1,5 @@
+from typing import Dict, Set, Union
+
 from .file_format import FileFormat
 
 TESSERACT_CMD: str = "tesseract"
@@ -11,7 +13,7 @@ AIOPYTESSERACT_DEFAULT_PSM: int = 3
 AIOPYTESSERACT_DEFAULT_OEM: int = 3
 
 # https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html
-TESSERACT_LANGUAGES = {
+TESSERACT_LANGUAGES: Set[str] = {
     "afr",
     "amh",
     "ara",
@@ -138,7 +140,7 @@ TESSERACT_LANGUAGES = {
     "yor",
 }
 
-PAGE_SEGMENTATION_MODES = {
+PAGE_SEGMENTATION_MODES: Dict[int, str] = {
     0: "Orientation and script detection (OSD) only.",
     1: "Automatic page segmentation with OSD.",
     2: "Automatic page segmentation, but no OSD, or OCR. (not implemented)",
@@ -155,14 +157,14 @@ PAGE_SEGMENTATION_MODES = {
     13: "Raw line. Treat the image as a single text line, bypassing hacks that are Tesseract-specific.",
 }
 
-OCR_ENGINE_MODES = {
+OCR_ENGINE_MODES: Dict[int, str] = {
     0: "Legacy engine only.",
     1: "Neural nets LSTM engine only.",
     2: "Legacy + LSTM engines.",
     3: "Default, based on what is available.",
 }
 
-OUTPUT_FILE_EXTENSIONS = {
+OUTPUT_FILE_EXTENSIONS: Dict[Union[str, FileFormat], str] = {
     FileFormat.ALTO: ".xml",
     FileFormat.HOCR: ".hocr",
     FileFormat.PDF: ".pdf",
