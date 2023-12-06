@@ -3,5 +3,5 @@ from enum import IntEnum, unique
 
 @unique
 class ReturnCode(IntEnum):
-    SUCCESS = 0
-    FAILED = 1
+    SUCCESS: int = 0
+    FAILED: int = 1
