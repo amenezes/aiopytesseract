@@ -79,6 +79,14 @@ async def test_tesseract_parameters():
     assert isinstance(parameters[0], Parameter)
 
 
+@pytest.mark.xfail(
+    reason="The number of parameters in Tesseract can vary between releases."
+)
+async def test_len_tesseract_parameters():
+    parameters = await aiopytesseract.tesseract_parameters()
+    assert len(parameters) == 627
+
+
 @pytest.mark.parametrize(
     "func, timeout",
     [
