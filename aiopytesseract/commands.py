@@ -176,32 +176,36 @@ async def tesseract_parameters(
                     [param.group(1), param.group(2), param.group(3)], Parameter  # type: ignore
                 )
             )
-    return params
+    return sorted(params, key=lambda p: p.name)
 
 
 @singledispatch
 async def image_to_string(
     image: Any,
-    user_words: Union[None, str] = None,
-    user_patterns: Union[None, str] = None,
-    tessdata_dir: Union[None, str] = None,
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
+    encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
+    user_words: Union[None, str] = None,
+    user_patterns: Union[None, str] = None,
+    tessdata_dir: Union[None, str] = None,
+    config: Union[None, List[Tuple[str, str]]] = None,
 ) -> str:
     """Extract string from an image.
 
     :param image: image input to tesseract. (valid values: str, bytes)
-    :param user_words: location of user words file. (default: None)
-    :param user_patterns: location of user patterns file. (default: None)
-    :param tessdata_dir: location of tessdata path. (default: None)
     :param dpi: image dots per inch (DPI). (default: 300)
     :param lang: tesseract language. (default: eng, format: eng, eng+por, eng+por+fra)
     :param psm: page segmentation modes. (default: 3)
     :param oem: ocr engine modes. (default: 3)
+    :param encoding: encoding. (default: UTF-8)
     :param timeout: command timeout. (default: 30)
+    :param user_words: location of user words file. (default: None)
+    :param user_patterns: location of user patterns file. (default: None)
+    :param tessdata_dir: location of tessdata path. (default: None)
+    :param config: set value for config variables. (default: None)
     """
     raise NotImplementedError(f"Type {type(image)} not supported.")
 
@@ -213,11 +217,12 @@ async def _(
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
+    encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     user_words: Union[None, str] = None,
     user_patterns: Union[None, str] = None,
     tessdata_dir: Union[None, str] = None,
-    encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
+    config: Union[None, List[Tuple[str, str]]] = None,
 ) -> str:
     image_text: bytes = await execute(
         image,
@@ -230,6 +235,7 @@ async def _(
         user_words=user_words,
         user_patterns=user_patterns,
         tessdata_dir=tessdata_dir,
+        config=config,
     )
     return image_text.decode(encoding)
 
@@ -241,11 +247,12 @@ async def _(
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
+    encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     user_words: Union[None, str] = None,
     user_patterns: Union[None, str] = None,
     tessdata_dir: Union[None, str] = None,
-    encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
+    config: Union[None, List[Tuple[str, str]]] = None,
 ) -> str:
     image_text: bytes = await execute(
         image,
@@ -258,6 +265,7 @@ async def _(
         user_words=user_words,
         user_patterns=user_patterns,
         tessdata_dir=tessdata_dir,
+        config=config,
     )
     return image_text.decode(encoding)
 
@@ -645,6 +653,7 @@ async def run(
     user_words: Union[None, str] = None,
     user_patterns: Union[None, str] = None,
     tessdata_dir: Union[None, str] = None,
+    config: Union[None, List[Tuple[str, str]]] = None,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> AsyncGenerator[Tuple[str, ...], None]:
     """Run Tesseract-OCR with multiple analysis.
@@ -665,6 +674,7 @@ async def run(
     :param user_words: location of user words file. (default: None)
     :param user_patterns: location of user patterns file. (default: None)
     :param tessdata_dir: location of tessdata path. (default: None)
+    :param config: set value for config variables. (default: None)
     :param encoding: decode bytes to string. (default: utf-8)
     """
     if not isinstance(image, bytes):
@@ -682,6 +692,7 @@ async def run(
             user_words=user_words,
             user_patterns=user_patterns,
             tessdata_dir=tessdata_dir,
+            config=config,
             encoding=encoding,
         )
         yield resp

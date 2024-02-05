@@ -18,67 +18,123 @@ pip install aiopytesseract
 
 ## Usage
 
-```python
+### List all available languages by Tesseract installation
+
+``` python
+import aiopytesseract
+
+await aiopytesseract.languages()
+await aiopytesseract.get_languages()
+```
+
+### Tesseract version
+
+``` python
+import aiopytesseract
+
+await aiopytesseract.tesseract_version()
+await aiopytesseract.get_tesseract_version()
+```
+
+### Tesseract parameters
+
+``` python
+import aiopytesseract
+
+await aiopytesseract.tesseract_parameters()
+```
+
+### Confidence only info
+
+``` python
+import aiopytesseract
+
+await aiopytesseract.confidence("tests/samples/file-sample_150kB.png")
+```
+
+### Deskew info
+
+``` python
+import aiopytesseract
+
+await aiopytesseract.deskew("tests/samples/file-sample_150kB.png")
+```
+
+### Extract text from an image: locally or bytes
+
+``` python
 from pathlib import Path
 
 import aiopytesseract
 
-
-# list all available languages by tesseract installation
-await aiopytesseract.languages()
-await aiopytesseract.get_languages()
-
-
-# tesseract version
-await aiopytesseract.tesseract_version()
-await aiopytesseract.get_tesseract_version()
-
-
-# tesseract parameters
-await aiopytesseract.tesseract_parameters()
-
-
-# confidence only info
-await aiopytesseract.confidence("tests/samples/file-sample_150kB.png")
-
-
-# deskew info
-await aiopytesseract.deskew("tests/samples/file-sample_150kB.png")
-
-
-# extract text from an image: locally or bytes
 await aiopytesseract.image_to_string("tests/samples/file-sample_150kB.png")
 await aiopytesseract.image_to_string(
-	Path("tests/samples/file-sample_150kB.png")read_bytes(), dpi=220, lang='eng+por'
+	Path("tests/samples/file-sample_150kB.png").read_bytes(), dpi=220, lang='eng+por'
 )
+```
 
+### Box estimates
 
-# box estimates
+``` python
+from pathlib import Path
+
+import aiopytesseract
+
 await aiopytesseract.image_to_boxes("tests/samples/file-sample_150kB.png")
 await aiopytesseract.image_to_boxes(Path("tests/samples/file-sample_150kB.png")
+```
 
+### Boxes, confidence and page numbers
 
-# boxes, confidence and page numbers
+``` python
+from pathlib import Path
+
+import aiopytesseract
+
 await aiopytesseract.image_to_data("tests/samples/file-sample_150kB.png")
 await aiopytesseract.image_to_data(Path("tests/samples/file-sample_150kB.png")
+```
 
+### Information about orientation and script detection
 
-# information about orientation and script detection
+``` python
+from pathlib import Path
+
+import aiopytesseract
+
 await aiopytesseract.image_to_osd("tests/samples/file-sample_150kB.png")
 await aiopytesseract.image_to_osd(Path("tests/samples/file-sample_150kB.png")
+```
 
+### Generate a searchable PDF
 
-# generate a searchable PDF
+``` python
+from pathlib import Path
+
+import aiopytesseract
+
 await aiopytesseract.image_to_pdf("tests/samples/file-sample_150kB.png")
 await aiopytesseract.image_to_pdf(Path("tests/samples/file-sample_150kB.png")
+```
 
+### Generate HOCR output
 
-# generate HOCR output
+``` python
+from pathlib import Path
+
+import aiopytesseract
+
 await aiopytesseract.image_to_hocr("tests/samples/file-sample_150kB.png")
 await aiopytesseract.image_to_hocr(Path("tests/samples/file-sample_150kB.png")
+```
 
+### Multi ouput
 
-# multi ouput
+``` python
+from pathlib import Path
+
+import aiopytesseract
+
 async with aiopytesseract.run(
 	Path('tests/samples/file-sample_150kB.png').read_bytes(),
 	'output',
@@ -89,7 +145,43 @@ async with aiopytesseract.run(
 	alto_file, tsv_file, txt_file = resp
 ```
 
-For more details on Tesseract best practices and the aiopytesseract, see the folder: `docs`.
+### Config variables
+
+``` python
+from pathlib import Path
+
+import aiopytesseract
+
+async with aiopytesseract.run(
+	Path('tests/samples/text-with-chars-and-numbers.png').read_bytes(),
+	'output',
+	'alto tsv txt'
+	config=[("tessedit_char_whitelist", "0123456789")]
+) as resp:
+	# will generate (output.xml, output.tsv and output.txt)
+	print(resp)
+	alto_file, tsv_file, txt_file = resp
+```
+
+``` python
+from pathlib import Path
+
+import aiopytesseract
+
+await aiopytesseract.image_to_string(
+	"tests/samples/text-with-chars-and-numbers.png",
+	config=[("tessedit_char_whitelist", "0123456789")]
+)
+
+await aiopytesseract.image_to_string(
+	Path("tests/samples/text-with-chars-and-numbers.png").read_bytes(),
+	dpi=220,
+	lang='eng+por',
+	config=[("tessedit_char_whitelist", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")]
+)
+```
+
+> For more details on Tesseract best practices and the aiopytesseract, see the folder: `docs`.
 
 ## Examples
 

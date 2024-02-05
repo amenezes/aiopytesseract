@@ -51,6 +51,8 @@ async def execute(
     user_words: Union[None, str] = None,
     user_patterns: Union[None, str] = None,
     tessdata_dir: Union[None, str] = None,
+    config: Union[None, List[Tuple[str, str]]] = None,
+    encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> bytes:
     raise NotImplementedError
 
@@ -67,6 +69,8 @@ async def _(
     user_words: Union[None, str] = None,
     user_patterns: Union[None, str] = None,
     tessdata_dir: Union[None, str] = None,
+    config: Union[None, List[Tuple[str, str]]] = None,
+    encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> bytes:
     await file_exists(image)
     response: bytes = await execute(
@@ -80,6 +84,8 @@ async def _(
         user_words=user_words,
         user_patterns=user_patterns,
         tessdata_dir=tessdata_dir,
+        config=config,
+        encoding=encoding,
     )
     return response
 
@@ -89,13 +95,14 @@ async def _(
     image: bytes,
     output_format: str,
     dpi: int,
-    lang: Union[None, str],
     psm: int,
     oem: int,
     timeout: float,
+    lang: Union[None, str] = None,
     user_words: Union[None, str] = None,
     user_patterns: Union[None, str] = None,
     tessdata_dir: Union[None, str] = None,
+    config: Union[None, List[Tuple[str, str]]] = None,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> bytes:
     cmd_args = await _build_cmd_args(
@@ -103,10 +110,11 @@ async def _(
         dpi=dpi,
         psm=psm,
         oem=oem,
+        lang=lang,
         user_words=user_words,
         user_patterns=user_patterns,
         tessdata_dir=tessdata_dir,
-        lang=lang,
+        config=config,
     )
     try:
         proc = await asyncio.wait_for(
@@ -142,6 +150,7 @@ async def execute_multi_output_cmd(
     user_words: Union[None, str] = None,
     user_patterns: Union[None, str] = None,
     tessdata_dir: Union[None, str] = None,
+    config: Union[None, List[Tuple[str, str]]] = None,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> Tuple[str, ...]:
     cmd_args = await _build_cmd_args(
@@ -154,6 +163,7 @@ async def execute_multi_output_cmd(
         tessdata_dir=tessdata_dir,
         lang=lang,
         output=output_file,
+        config=config,
     )
     try:
         proc = await asyncio.wait_for(
@@ -187,6 +197,7 @@ async def _build_cmd_args(
     tessdata_dir: Union[None, str] = None,
     lang: Union[None, str] = None,
     output: str = "stdout",
+    config: Union[None, List[Tuple[str, str]]] = None,
 ) -> List[str]:
     await asyncio.gather(psm_is_valid(psm), oem_is_valid(oem))
     # OCR options must occur before any configfile.
@@ -211,6 +222,11 @@ async def _build_cmd_args(
         await language_is_valid(lang)
         cmd_args.append("-l")
         cmd_args.append(lang)
+
+    if config:
+        for option, value in config:
+            cmd_args.append("-c")
+            cmd_args.append(f"{option}={value} ")
 
     extension = reversed(output_extension.split())
     for ext in extension:
