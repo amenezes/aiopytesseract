@@ -226,7 +226,7 @@ async def _build_cmd_args(
     if config:
         for option, value in config:
             cmd_args.append("-c")
-            cmd_args.append(f"{option}={value} ")
+            cmd_args.append(f"{option}={value}")
 
     extension = reversed(output_extension.split())
     for ext in extension:

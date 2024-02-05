@@ -168,14 +168,23 @@ async def tesseract_parameters(
     raw_data: bytes = await proc.stdout.read()  # type: ignore
     data = raw_data.decode(encoding)
     params = []
-    for line in data.split("\n"):
+    # [1:] - skip first line with text: "Tesseract parameters:\n"
+    for line in data.split("\n")[1:]:
         param = re.search(r"(\w+)\s+(-?\d+.?\d*)\s+(.*)[^\n]$", line)
         if param:
             params.append(
                 cattr.structure_attrs_fromtuple(
-                    [param.group(1), param.group(2), param.group(3)], Parameter  # type: ignore
+                    [param.group(1), param.group(3), param.group(2)], Parameter  # type: ignore
                 )
             )
+        else:
+            param = re.search(r"(\w+)\s+(.*)[^\n]$", line)
+            if param:
+                params.append(
+                    cattr.structure_attrs_fromtuple(
+                        [param.group(1), param.group(2)], Parameter  # type: ignore
+                    )
+                )
     return sorted(params, key=lambda p: p.name)
 
 
