@@ -28,7 +28,7 @@ docs:
 
 install-deps:
 	@echo "> installing dependencies..."
-	pip install -r requirements-dev.txt
+	uv pip install -r requirements-dev.txt
 	pre-commit install
 
 tox:
@@ -50,7 +50,7 @@ about:
 ci: lint tests
 ifeq ($(GITHUB_HEAD_REF), false)
 	@echo "> uploading report..."
-	codecov --file coverage.xml -t $$CODECOV_TOKEN
+	# codecov --file coverage.xml -t $$CODECOV_TOKEN
 endif
 
 all: install-deps ci
