@@ -41,8 +41,8 @@ jobs:
       run: |
         sudo apt-get install -y tesseract-ocr tesseract-ocr-por
         make ci SKIP_STYLE=true
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      with:
-        file: ./coverage.xml
-        fail_ci_if_error: true
+    # - name: Upload coverage to Codecov
+    #   uses: codecov/codecov-action@v1
+    #   with:
+    #     file: ./coverage.xml
+    #     fail_ci_if_error: true
