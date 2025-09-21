@@ -35,7 +35,7 @@ operation = st.sidebar.selectbox(
         "Image to OSD",
         "Confidence",
         "Deskew",
-        "Parameters"
+        "Parameters",
     ),
 )
 dpi = st.sidebar.number_input("DPI", min_value=1, value=300)
@@ -55,9 +55,7 @@ oem = st.sidebar.slider(
 timeout = st.sidebar.text_input("Timeout", value=AIOPYTESSERACT_DEFAULT_TIMEOUT)
 tessdata_dir = st.sidebar.text_input("tessdata-dir", value="")
 image = st.sidebar.file_uploader(
-    "Attach image",
-    accept_multiple_files=False,
-    type=['jpeg', 'jpg', 'png']
+    "Attach image", accept_multiple_files=False, type=["jpeg", "jpg", "png"]
 )
 if st.sidebar.button("Execute"):
     with st.spinner("Processing..."):
@@ -145,12 +143,14 @@ if st.sidebar.button("Execute"):
                     tmpfile.seek(0)
                     deskew = loop.run_until_complete(
                         aiopytesseract.deskew(
-                            tmpfile.name, dpi=dpi, lang="+".join(lang), oem=oem, tessdata_dir=tessdata_dir
+                            tmpfile.name,
+                            dpi=dpi,
+                            lang="+".join(lang),
+                            oem=oem,
+                            tessdata_dir=tessdata_dir,
                         )
                     )
                 st.markdown(f"""### Result: {deskew}""")
             case "Parameters":
-                params = loop.run_until_complete(
-                    aiopytesseract.tesseract_parameters()
-                )
+                params = loop.run_until_complete(aiopytesseract.tesseract_parameters())
                 st.table(data=params)

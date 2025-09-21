@@ -154,7 +154,7 @@ PAGE_SEGMENTATION_MODES: Dict[int, str] = {
     10: "Treat the image as a single character.",
     11: "Sparse text. Find as much text as possible in no particular order.",
     12: "Sparse text with OSD.",
-    13: "Raw line. Treat the image as a single text line, bypassing hacks that are Tesseract-specific.",
+    13: "Raw line. Single text line, bypassing Tesseract-specific hacks.",
 }
 
 OCR_ENGINE_MODES: Dict[int, str] = {

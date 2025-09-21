@@ -34,7 +34,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "mypy",    
+    "mypy",
     "types-aiofiles",
     "pytest",
     "pytest-cov",
@@ -42,6 +42,8 @@ dev = [
     "mkdocs-material",
     "pre-commit",
     "ruff",
+    "bandit",
+    "detect-secrets",
 ]
 docs = [
     "mkdocs-material"

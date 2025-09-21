@@ -27,7 +27,11 @@ class LanguageInvalidException(TesseractError):
         self, language: str, available_languages: list[str] | None = None
     ) -> None:
         if available_languages:
-            message = f"Language '{language}' is invalid. Available: {', '.join(available_languages[:5])}{'...' if len(available_languages) > 5 else ''}"
+            available = ", ".join(available_languages[:5])
+            ellipsis = "..." if len(available_languages) > 5 else ""
+            message = (
+                f"Language '{language}' is invalid. Available: {available}{ellipsis}"
+            )
         else:
             message = f"Language '{language}' is invalid"
         super().__init__(message)
@@ -61,5 +65,7 @@ class TesseractNotFoundError(TesseractError):
 
 class ImageFormatError(TesseractError):
     def __init__(self, image_type: type) -> None:
-        message = f"Image type '{image_type.__name__}' is not supported. Use str (file path) or bytes"
+        message = (
+            f"Image type '{image_type.__name__}' is not supported. Use str or bytes"
+        )
         super().__init__(message)
