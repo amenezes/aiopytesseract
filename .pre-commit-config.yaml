@@ -29,6 +29,7 @@ repos:
         entry: mypy
         language: system
         types: [ python ]
+        exclude: ^tests/|^examples/
 -   repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.3.0
     hooks:

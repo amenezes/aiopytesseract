@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 import aiopytesseract
-from aiopytesseract.exceptions import TesseractRuntimeError, TesseractTimeoutError
+from aiopytesseract.exceptions import TesseractTimeoutError
 from aiopytesseract.models import Parameter
 
 
@@ -106,7 +106,7 @@ async def test_method_timeout(func, timeout):
 
 
 async def test_run_timeout():
-    with pytest.raises(TesseractRuntimeError):
+    with pytest.raises(TesseractTimeoutError):
         async with aiopytesseract.run(
             Path("tests/samples/file-sample_150kB.png").read_bytes(),
             "xxx",

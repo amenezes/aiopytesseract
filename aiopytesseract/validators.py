@@ -10,13 +10,13 @@ from .exceptions import (
 
 
 async def psm_is_valid(psm: int) -> None:
-    if psm not in PAGE_SEGMENTATION_MODES.keys():
-        raise PSMInvalidException
+    if psm not in PAGE_SEGMENTATION_MODES:
+        raise PSMInvalidException(psm)
 
 
 async def oem_is_valid(oem: int) -> None:
-    if oem not in OCR_ENGINE_MODES.keys():
-        raise OEMInvalidException
+    if oem not in OCR_ENGINE_MODES:
+        raise OEMInvalidException(oem)
 
 
 async def file_exists(file_path: str) -> None:

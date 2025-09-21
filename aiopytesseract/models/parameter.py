@@ -8,5 +8,6 @@ class Parameter:
     name: str = field(validator=validators.instance_of(str))
     description: str = field(validator=validators.instance_of(str))
     value: Union[None, str] = field(
-        default=None, converter=converters.default_if_none("-")  # type: ignore
+        default=None,
+        converter=converters.default_if_none("-"),  # type: ignore
     )

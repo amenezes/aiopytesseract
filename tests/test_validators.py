@@ -4,7 +4,7 @@ from aiopytesseract import constants, exceptions, validators
 
 
 async def test_valid_psm():
-    for psm in constants.PAGE_SEGMENTATION_MODES.keys():
+    for psm in constants.PAGE_SEGMENTATION_MODES:
         await validators.psm_is_valid(psm)
 
 
@@ -15,7 +15,7 @@ async def test_invalid_psm(psm):
 
 
 async def test_valid_oem():
-    for oem in constants.OCR_ENGINE_MODES.keys():
+    for oem in constants.OCR_ENGINE_MODES:
         await validators.oem_is_valid(oem)
 
 

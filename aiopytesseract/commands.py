@@ -10,6 +10,7 @@ from aiofiles import tempfile
 
 from aiopytesseract.validators import file_exists
 
+from ._logger import logger
 from .base_command import execute, execute_cmd, execute_multi_output_cmd
 from .constants import (
     AIOPYTESSERACT_DEFAULT_DPI,
@@ -52,8 +53,7 @@ async def get_languages(
     :param config: config. (valid values: str, default: "")
     :param encoding: decode bytes to string. (default: utf-8)
     """
-    langs = await languages(config, encoding=encoding)
-    return langs
+    return await languages(config, encoding=encoding)
 
 
 async def tesseract_version(encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING) -> str:
@@ -71,8 +71,7 @@ async def get_tesseract_version(encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING)
 
     :param encoding: decode bytes to string. (default: utf-8)
     """
-    version = await tesseract_version(encoding)
-    return version
+    return await tesseract_version(encoding)
 
 
 async def confidence(
@@ -110,7 +109,7 @@ async def confidence(
         )
     except asyncio.TimeoutError:
         proc.kill()
-        raise TesseractTimeoutError()
+        raise TesseractTimeoutError(timeout) from None
     except AttributeError:
         confidence_value = 0.0
     return confidence_value
@@ -149,7 +148,7 @@ async def deskew(
         )
     except asyncio.TimeoutError:
         proc.kill()
-        raise TesseractTimeoutError()
+        raise TesseractTimeoutError(timeout) from None
     except AttributeError:
         deskew_value = 0.0
     return deskew_value
@@ -174,7 +173,8 @@ async def tesseract_parameters(
         if param:
             params.append(
                 cattr.structure_attrs_fromtuple(
-                    [param.group(1), param.group(3), param.group(2)], Parameter  # type: ignore
+                    (param.group(1), param.group(3), param.group(2)),
+                    Parameter,
                 )
             )
         else:
@@ -182,7 +182,8 @@ async def tesseract_parameters(
             if param:
                 params.append(
                     cattr.structure_attrs_fromtuple(
-                        [param.group(1), param.group(2)], Parameter  # type: ignore
+                        (param.group(1), param.group(2)),
+                        Parameter,
                     )
                 )
     return sorted(params, key=lambda p: p.name)
@@ -445,7 +446,7 @@ async def _(
 
 @singledispatch
 async def image_to_boxes(
-    image: Any,
+    image: str | bytes,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     tessdata_dir: Union[None, str] = None,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
@@ -471,15 +472,14 @@ async def _(
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> List[Box]:
     await file_exists(image)
-    boxes = await image_to_boxes(
+    return await image_to_boxes(
         Path(image).read_bytes(), lang, tessdata_dir, timeout, encoding
     )
-    return boxes
 
 
 @image_to_boxes.register(bytes)
 async def _(
-    image: str,
+    image: bytes,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     tessdata_dir: Union[None, str] = None,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
@@ -488,23 +488,24 @@ async def _(
     cmdline = f"-l {lang} stdin stdout batch.nochop makebox"
     if tessdata_dir:
         cmdline = f"--tessdata-dir {tessdata_dir} {cmdline}"
-    print(cmdline)
+    logger.debug(f"Executing tesseract command: {cmdline}")
     try:
         proc = await execute_cmd(cmdline)
         stdout, stderr = await asyncio.wait_for(
-            proc.communicate(image), timeout=timeout  # type: ignore
+            proc.communicate(image),
+            timeout=timeout,
         )
     except asyncio.TimeoutError:
         proc.kill()
-        raise TesseractTimeoutError()
+        raise TesseractTimeoutError(timeout) from None
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))
     data = stdout.decode(encoding)
     datalen = len(data.split("\n")) - 1
-    boxes = []
-    for line in data.split("\n")[:datalen]:
-        boxes.append(cattr.structure_attrs_fromtuple(tuple(line.split()), Box))
-    return boxes
+    return [
+        cattr.structure_attrs_fromtuple(tuple(line.split()), Box)
+        for line in data.split("\n")[:datalen]
+    ]
 
 
 @singledispatch
@@ -541,10 +542,9 @@ async def _(
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
 ) -> List[Data]:
     await file_exists(image)
-    data_values = await image_to_data(
+    return await image_to_data(
         Path(image).read_bytes(), dpi, lang, timeout, encoding, tessdata_dir, psm
     )
-    return data_values
 
 
 @image_to_data.register(bytes)
@@ -567,7 +567,7 @@ async def _(
         )
     except asyncio.TimeoutError:
         proc.kill()
-        raise TesseractTimeoutError()
+        raise TesseractTimeoutError(timeout) from None
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))
     data: str = stdout.decode(encoding)
@@ -613,10 +613,9 @@ async def _(
     tessdata_dir: Union[None, str] = None,
 ) -> OSD:
     await file_exists(image)
-    osd = await image_to_osd(
+    return await image_to_osd(
         Path(image).read_bytes(), dpi, oem, lang, timeout, encoding, tessdata_dir
     )
-    return osd
 
 
 @image_to_osd.register(bytes)
@@ -639,14 +638,13 @@ async def _(
         timeout=timeout,
         tessdata_dir=tessdata_dir,
     )
-    osd = cattr.structure_attrs_fromtuple(
+    return cattr.structure_attrs_fromtuple(
         re.findall(  # type: ignore
             r"\w+\s?:\s*(\d+.?\d*|\w+)",
             data.decode(encoding),
         ),
         OSD,
     )
-    return osd
 
 
 @asynccontextmanager

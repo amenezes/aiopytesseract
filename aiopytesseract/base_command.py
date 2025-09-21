@@ -132,7 +132,7 @@ async def _(
         )
     except asyncio.TimeoutError:
         proc.kill()
-        raise TesseractTimeoutError()
+        raise TesseractTimeoutError(timeout) from None
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))
     return stdout
@@ -179,7 +179,7 @@ async def execute_multi_output_cmd(
         _, stderr = await asyncio.wait_for(proc.communicate(image), timeout=timeout)
     except asyncio.TimeoutError:
         proc.kill()
-        raise TesseractTimeoutError()
+        raise TesseractTimeoutError(timeout) from None
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))
     return tuple(
