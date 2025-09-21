@@ -39,7 +39,6 @@ dev = [
     "pytest",
     "pytest-cov",
     "pytest-asyncio",
-    "mkdocs-material",
     "pre-commit",
     "ruff",
     "bandit",
@@ -55,15 +54,14 @@ all = [
 [project.optional-dependencies]
 dev = [
     "mypy",
-    "black",
-    "flake8",
-    "isort",
     "types-aiofiles",
-    "build",
     "pytest",
     "pytest-cov",
     "pytest-asyncio",
-    "mkdocs-material",
+    "pre-commit",
+    "ruff",
+    "bandit",
+    "detect-secrets",
 ]
 docs = ["mkdocs-material"]
 all = ["mkdocs-material"]
