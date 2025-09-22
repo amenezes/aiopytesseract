@@ -1,5 +1,7 @@
 import asyncio
 import shlex
+import subprocess
+import sys
 from asyncio.subprocess import Process
 from collections import deque
 from functools import singledispatch
@@ -10,7 +12,7 @@ from aiopytesseract.constants import (
     AIOPYTESSERACT_DEFAULT_ENCODING,
     AIOPYTESSERACT_DEFAULT_TIMEOUT,
     OUTPUT_FILE_EXTENSIONS,
-    TESSERACT_CMD,
+    TESSERACT_CMD
 )
 from aiopytesseract.exceptions import TesseractRuntimeError, TesseractTimeoutError
 from aiopytesseract.returncode import ReturnCode
@@ -23,7 +25,8 @@ from aiopytesseract.validators import (
 
 
 async def execute_cmd(
-    cmd_args: str, timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT
+    cmd_args: str,
+    timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT
 ) -> Process:
     logger.debug(
         f"aiopytesseract command: '{TESSERACT_CMD} {shlex.join(shlex.split(cmd_args))}'"
@@ -35,6 +38,7 @@ async def execute_cmd(
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
+            creationflags=_get_subprocess_creation_flags(),
         ),
         timeout=timeout,
     )
@@ -129,6 +133,7 @@ async def _(
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
+                creationflags=_get_subprocess_creation_flags(),
             ),
             timeout=timeout,
         )
@@ -180,6 +185,7 @@ async def execute_multi_output_cmd(
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
+                creationflags=_get_subprocess_creation_flags(),
             ),
             timeout=timeout,
         )
@@ -242,3 +248,12 @@ async def _build_cmd_args(
 
     logger.debug(f"aiopytesseract command: 'tesseract {shlex.join(cmd_args)}'")
     return shlex.split(shlex.join(cmd_args))
+
+
+def _get_subprocess_creation_flags() -> int:
+    subprocess_creation_flags: int = 0
+
+    if sys.platform == "win32":
+        subprocess_creation_flags |= subprocess.CREATE_NO_WINDOW
+
+    return subprocess_creation_flags
