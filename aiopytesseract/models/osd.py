@@ -1,7 +1,7 @@
-from dataclasses import dataclass
+from attrs import frozen
 
 
-@dataclass(frozen=True)
+@frozen
 class OSD:
     page_number: int
     orientation_degrees: float
@@ -9,3 +9,6 @@ class OSD:
     orientation_confidence: float
     script: str
     script_confidence: float
+
+    def __str__(self) -> str:
+        return self.script

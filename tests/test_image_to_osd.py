@@ -23,7 +23,6 @@ async def test_image_to_osd_with_str_image(image):
 async def test_image_to_osd(image):
     osd = await aiopytesseract.image_to_osd(Path(image).read_bytes())
     assert isinstance(osd, OSD)
-    assert isinstance(osd, OSD)
     assert isinstance(osd.page_number, int)
     assert isinstance(osd.orientation_degrees, float)
     assert isinstance(osd.rotate, float)
@@ -40,3 +39,15 @@ async def test_image_to_osd_with_invalid():
 async def test_image_to_osd_with_type_not_supported():
     with pytest.raises(NotImplementedError):
         await aiopytesseract.image_to_osd(None)
+
+
+def test_osd_str():
+    osd = OSD(
+        page_number=0,
+        orientation_degrees=0,
+        rotate=0,
+        orientation_confidence=0,
+        script="",
+        script_confidence=0,
+    )
+    assert str(osd) == ""

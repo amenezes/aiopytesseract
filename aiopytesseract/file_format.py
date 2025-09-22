@@ -1,14 +1,11 @@
-from enum import Enum, unique
+from enum import StrEnum, unique
 
 
 @unique
-class FileFormat(str, Enum):
+class FileFormat(StrEnum):
     ALTO = "alto"
     HOCR = "hocr"
     PDF = "pdf"
     TSV = "tsv"
     TXT = "txt"
     OSD = "osd"
-
-    def __str__(self) -> str:
-        return str.__str__(self)

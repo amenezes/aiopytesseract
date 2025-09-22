@@ -31,3 +31,21 @@ async def test_image_to_data_with_invalid():
 async def test_image_to_data_with_type_not_supported():
     with pytest.raises(NotImplementedError):
         await aiopytesseract.image_to_data(None)
+
+
+def test_data_str():
+    data = Data(
+        level=0,
+        page_num=0,
+        block_num=0,
+        par_num=0,
+        line_num=0,
+        word_num=0,
+        left=0,
+        top=0,
+        width=0,
+        height=0,
+        conf=0,
+        text="",
+    )
+    assert str(data) == ""

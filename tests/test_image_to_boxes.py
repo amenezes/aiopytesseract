@@ -31,3 +31,8 @@ async def test_image_to_boxes_with_invalid():
 async def test_image_to_boxes_with_type_not_supported():
     with pytest.raises(NotImplementedError):
         await aiopytesseract.image_to_boxes(None)
+
+
+def test_box_str():
+    box = Box(character="A", x=0, y=0, w=10, h=10)
+    assert str(box) == "A"

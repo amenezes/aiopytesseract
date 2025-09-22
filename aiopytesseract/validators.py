@@ -1,7 +1,11 @@
 from pathlib import Path
 
-from .constants import OCR_ENGINE_MODES, PAGE_SEGMENTATION_MODES, TESSERACT_LANGUAGES
-from .exceptions import (
+from aiopytesseract.constants import (
+    OCR_ENGINE_MODES,
+    PAGE_SEGMENTATION_MODES,
+    TESSERACT_LANGUAGES,
+)
+from aiopytesseract.exceptions import (
     LanguageInvalidException,
     NoSuchFileException,
     OEMInvalidException,
