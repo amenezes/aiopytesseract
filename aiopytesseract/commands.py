@@ -93,6 +93,7 @@ async def confidence(
     :param encoding: decode bytes to string. (default: utf-8)
     """
     cmdline = f"stdin stdout -l {lang} --dpi {dpi} --psm 0 --oem {oem}"
+    proc = None
     if tessdata_dir:
         cmdline = f"--tessdata-dir {tessdata_dir} {cmdline}"
     try:
@@ -107,7 +108,8 @@ async def confidence(
             ).group(2)
         )
     except asyncio.TimeoutError:
-        proc.kill()
+        if proc is not None:
+            proc.kill()
         raise TesseractTimeoutError(timeout) from None
     except AttributeError:
         confidence_value = 0.0
@@ -134,6 +136,7 @@ async def deskew(
     :param encoding: decode bytes to string. (default: utf-8)
     """
     cmdline = f"{image} stdout -l {lang} --dpi {dpi} --psm 2 --oem {oem}"
+    proc = None
     if tessdata_dir:
         cmdline = f"--tessdata-dir {tessdata_dir} {cmdline}"
     try:
@@ -146,7 +149,8 @@ async def deskew(
             ).group(2)
         )
     except asyncio.TimeoutError:
-        proc.kill()
+        if proc is not None:
+            proc.kill()
         raise TesseractTimeoutError(timeout) from None
     except AttributeError:
         deskew_value = 0.0
@@ -485,6 +489,7 @@ async def _(
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> list[Box]:
     cmdline = f"-l {lang} stdin stdout batch.nochop makebox"
+    proc = None
     if tessdata_dir:
         cmdline = f"--tessdata-dir {tessdata_dir} {cmdline}"
     logger.debug(f"Executing tesseract command: {cmdline}")
@@ -495,7 +500,8 @@ async def _(
             timeout=timeout,
         )
     except asyncio.TimeoutError:
-        proc.kill()
+        if proc is not None:
+            proc.kill()
         raise TesseractTimeoutError(timeout) from None
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))
@@ -557,6 +563,7 @@ async def _(
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
 ) -> list[Data]:
     cmdline = f"stdin stdout -c tessedit_create_tsv=1 --dpi {dpi} -l {lang} --psm {psm}"
+    proc = None
     if tessdata_dir:
         cmdline = f"--tessdata-dir {tessdata_dir} {cmdline}"
     try:
@@ -565,7 +572,8 @@ async def _(
             proc.communicate(image), timeout=timeout
         )
     except asyncio.TimeoutError:
-        proc.kill()
+        if proc is not None:
+            proc.kill()
         raise TesseractTimeoutError(timeout) from None
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))

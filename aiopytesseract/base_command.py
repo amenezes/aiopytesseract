@@ -120,6 +120,7 @@ async def _(
         tessdata_dir=tessdata_dir,
         config=config,
     )
+    proc = None
     try:
         proc = await asyncio.wait_for(
             asyncio.create_subprocess_exec(
@@ -135,7 +136,8 @@ async def _(
             proc.communicate(image), timeout=timeout
         )
     except asyncio.TimeoutError:
-        proc.kill()
+        if proc is not None:
+            proc.kill()
         raise TesseractTimeoutError(timeout) from None
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))
@@ -169,6 +171,7 @@ async def execute_multi_output_cmd(
         output=output_file,
         config=config,
     )
+    proc = None
     try:
         proc = await asyncio.wait_for(
             asyncio.create_subprocess_exec(
@@ -182,7 +185,8 @@ async def execute_multi_output_cmd(
         )
         _, stderr = await asyncio.wait_for(proc.communicate(image), timeout=timeout)
     except asyncio.TimeoutError:
-        proc.kill()
+        if proc is not None:
+            proc.kill()
         raise TesseractTimeoutError(timeout) from None
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))

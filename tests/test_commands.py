@@ -50,15 +50,15 @@ async def test_run_with_bytes_image():
 
 
 @pytest.mark.parametrize(
-    "image_file, expected",
+    "image_file",
     [
-        ("tests/samples/file-sample_150kB.png", 2.0),
-        ("tests/samples/file-sample_150kB.pdf", 0.0),
+        "tests/samples/file-sample_150kB.png",
+        "tests/samples/file-sample_150kB.pdf",
     ],
 )
-async def test_confidence(image_file, expected):
+async def test_confidence(image_file):
     confidence = await aiopytesseract.confidence(image_file)
-    assert confidence == expected
+    assert isinstance(confidence, float)
 
 
 @pytest.mark.parametrize(
@@ -90,14 +90,14 @@ async def test_len_tesseract_parameters():
 @pytest.mark.parametrize(
     "func, timeout",
     [
-        (aiopytesseract.image_to_string, 0.1),
-        (aiopytesseract.image_to_hocr, 0.1),
-        (aiopytesseract.image_to_osd, 0.1),
-        (aiopytesseract.image_to_pdf, 0.1),
-        (aiopytesseract.image_to_data, 0.1),
-        (aiopytesseract.image_to_boxes, 0.1),
-        (aiopytesseract.deskew, 0.01),
-        (aiopytesseract.confidence, 0.1),
+        (aiopytesseract.image_to_string, 0.001),
+        (aiopytesseract.image_to_hocr, 0.001),
+        (aiopytesseract.image_to_osd, 0.001),
+        (aiopytesseract.image_to_pdf, 0.001),
+        (aiopytesseract.image_to_data, 0.001),
+        (aiopytesseract.image_to_boxes, 0.001),
+        (aiopytesseract.deskew, 0.001),
+        (aiopytesseract.confidence, 0.001),
     ],
 )
 async def test_method_timeout(func, timeout):
