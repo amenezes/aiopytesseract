@@ -19,27 +19,32 @@ jobs:
     runs-on: ${{ matrix.os }}-latest
     timeout-minutes: 15
     steps:
-    - uses: actions/checkout@master
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
         architecture: x64
-    - uses: actions/cache@v2
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+    - uses: actions/cache@v4
       with:
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-dev.txt') }}
-        path: ~/.cache/pip
+        key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+        path: |
+          ~/.cache/uv
+          .venv
         restore-keys: |
-          ${{ runner.os }}-pip-
-    - name: Install Python dependencies
-      uses: py-actions/py-dependency-install@v2
-      with:
-        path: "./requirements-dev.txt"
+          ${{ runner.os }}-uv-
+    - name: Install dependencies
+      run: |
+        uv sync --dev
     - name: Run lint & tests
       run: |
         sudo apt-get install -y tesseract-ocr tesseract-ocr-por
         make ci SKIP_STYLE=true
     # - name: Upload coverage to Codecov
-    #   uses: codecov/codecov-action@v1
+    #   uses: codecov/codecov-action@v3
     #   with:
     #     file: ./coverage.xml
     #     fail_ci_if_error: true
