@@ -33,12 +33,12 @@ jobs:
         key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
         path: |
           ~/.cache/uv
-          .venv
+          ~/.cargo
         restore-keys: |
           ${{ runner.os }}-uv-
     - name: Install dependencies
       run: |
-        uv sync --dev
+        uv sync --group dev
     - name: Run lint & tests
       run: |
         sudo apt-get install -y tesseract-ocr tesseract-ocr-por
