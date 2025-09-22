@@ -44,8 +44,12 @@ dev = [
 docs = [
     "mkdocs-material"
 ]
+streamlit = [
+    "streamlit"
+]
 all = [
     {include-group = "docs"},
+    {include-group = "streamlit"},
 ]
 
 [project.optional-dependencies]
@@ -61,7 +65,8 @@ dev = [
     "detect-secrets",
 ]
 docs = ["mkdocs-material"]
-all = ["mkdocs-material"]
+streamlit = ["streamlit"]
+all = ["mkdocs-material", "streamlit"]
 
 [project.urls]
 Documentation = "https://github.com/amenezes/aiopytesseract"
