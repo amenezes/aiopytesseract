@@ -46,7 +46,7 @@ publish-test:
 
 publish:
 	@echo "> publishing to PyPI..."
-	uv publish
+	uv publish -t $PYPI_TOKEN dist/*
 
 about:
 	@echo "> aiopytesseract: $(VERSION)"
