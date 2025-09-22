@@ -635,16 +635,28 @@ async def _(
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
     tessdata_dir: str | None = None,
 ) -> OSD:
-    data = await execute(
-        image,
-        output_format=FileFormat.OSD,
-        lang=lang,
-        dpi=dpi,
-        psm=0,
-        oem=oem,
-        timeout=timeout,
-        tessdata_dir=tessdata_dir,
-    )
+    # OSD requires legacy engine, force OEM to 0 (legacy only) if default is used
+    osd_oem = 0 if oem == AIOPYTESSERACT_DEFAULT_OEM else oem
+    try:
+        data = await execute(
+            image,
+            output_format=FileFormat.OSD,
+            lang=lang,
+            dpi=dpi,
+            psm=0,  # PSM 0 is required for OSD only
+            oem=osd_oem,
+            timeout=timeout,
+            tessdata_dir=tessdata_dir,
+        )
+    except TesseractRuntimeError as e:
+        if "OSD requires a model for the legacy engine" in str(
+            e
+        ) or "Can't open osd" in str(e):
+            raise TesseractRuntimeError(
+                "OSD (Orientation and Script Detection) requires legacy engine support. "
+                "Please ensure your Tesseract installation includes legacy trained data files."
+            ) from e
+        raise
     return cattr.structure_attrs_fromtuple(
         re.findall(  # type: ignore
             r"\w+\s?:\s*(\d+.?\d*|\w+)",

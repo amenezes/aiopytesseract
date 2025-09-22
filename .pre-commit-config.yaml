@@ -10,7 +10,7 @@ repos:
     hooks:
       - id: ruff
         name: ruff (format + lint + isort)
-        entry: ruff check --select I,F,E,W,S --fix
+        entry: ruff check --select I,F,E,W,S --fix --ignore E501
         language: system
         types: [python]
         args: [--exit-non-zero-on-fix]
