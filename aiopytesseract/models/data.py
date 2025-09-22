@@ -1,7 +1,7 @@
-from dataclasses import dataclass
+from attrs import field, frozen
 
 
-@dataclass(frozen=True)
+@frozen
 class Data:
     level: int
     page_num: int
@@ -14,4 +14,7 @@ class Data:
     width: int
     height: int
     conf: float
-    text: str = ""
+    text: str = field(factory=str)
+
+    def __str__(self) -> str:
+        return self.text

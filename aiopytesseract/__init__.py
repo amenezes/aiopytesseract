@@ -1,4 +1,4 @@
-from .commands import (
+from aiopytesseract.commands import (
     confidence,
     deskew,
     get_languages,
@@ -14,15 +14,15 @@ from .commands import (
     tesseract_parameters,
     tesseract_version,
 )
-from .models import OSD, Box, Data, Parameter
+from aiopytesseract.models import OSD, Box, Data, Parameter
 
-__version__ = "0.15.0"
+__version__ = "1.0.0"
 __all__ = [
-    "__version__",
     "OSD",
     "Box",
     "Data",
     "Parameter",
+    "__version__",
     "confidence",
     "deskew",
     "get_languages",
@@ -35,6 +35,6 @@ __all__ = [
     "image_to_string",
     "languages",
     "run",
-    "tesseract_version",
     "tesseract_parameters",
+    "tesseract_version",
 ]

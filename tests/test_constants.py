@@ -32,7 +32,7 @@ def test_default_constanst_values(var, expected):
 
 
 def test_tesseract_languages_supported():
-    assert TESSERACT_LANGUAGES == {
+    assert {
         "afr",
         "amh",
         "ara",
@@ -157,7 +157,7 @@ def test_tesseract_languages_supported():
         "vie",
         "yid",
         "yor",
-    }
+    } == TESSERACT_LANGUAGES
 
 
 def test_psm_valid_values():

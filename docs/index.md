@@ -120,7 +120,7 @@ streamlit run https://github.com/amenezes/aiopytesseract/blob/master/examples/st
 streamlit run examples/streamlit/app.py
 ```
 
-> note: The streamlit example need **python >= 3.10**
+> note: The streamlit example need **python >= 3.13**
 
 ## Links
 

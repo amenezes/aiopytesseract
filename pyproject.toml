@@ -1,8 +1,235 @@
-[build-system]
-requires = [
-    "setuptools >= 46.4.0",
+[project]
+name = "aiopytesseract"
+dynamic = ["version"]
+description = "asyncio tesseract wrapper for Tesseract-OCR"
+authors = [
+  { name = "Alexandre Menezes", email = "alexandre.fmenezes@gmail.com" }
 ]
-build-backend = "setuptools.build_meta"
+license = { text = "Apache-2.0" }
+readme = "README.md"
+requires-python = ">=3.11"
+keywords = ["asyncio", "ocr", "tesseract"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: AsyncIO",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = [
+    "aiofiles",
+    "attrs",
+    "cattrs",
+]
 
-[tool.isort]
-profile = "black"
+[dependency-groups]
+dev = [
+    "mypy",
+    "types-aiofiles",
+    "pytest",
+    "pytest-cov",
+    "pytest-asyncio",
+    "pre-commit",
+    "ruff",
+    "bandit",
+    "detect-secrets",
+]
+docs = [
+    "mkdocs-material"
+]
+streamlit = [
+    "streamlit"
+]
+all = [
+    {include-group = "docs"},
+    {include-group = "streamlit"},
+]
+
+[project.optional-dependencies]
+dev = [
+    "mypy",
+    "types-aiofiles",
+    "pytest",
+    "pytest-cov",
+    "pytest-asyncio",
+    "pre-commit",
+    "ruff",
+    "bandit",
+    "detect-secrets",
+]
+docs = ["mkdocs-material"]
+streamlit = ["streamlit"]
+all = ["mkdocs-material", "streamlit"]
+
+[project.urls]
+Documentation = "https://github.com/amenezes/aiopytesseract"
+Code = "https://github.com/amenezes/aiopytesseract"
+"Issue tracker" = "https://github.com/amenezes/aiopytesseract/issues"
+Changes = "https://github.com/amenezes/aiopytesseract/releases"
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore::pytest.PytestUnraisableExceptionWarning"
+]
+
+[tool.mypy]
+platform = "linux"
+files = ["aiopytesseract"]
+show_error_context = true
+verbosity = 0
+strict = true
+no_implicit_optional = true
+warn_unused_configs = true
+warn_return_any = true
+warn_unused_ignores = true
+warn_unreachable = true
+warn_redundant_casts = true
+strict_concatenate = true
+check_untyped_defs = true
+extra_checks = true
+strict_equality = true
+no_implicit_reexport = true
+disallow_untyped_defs = true
+disallow_untyped_calls = true
+disallow_incomplete_defs = true
+disallow_subclassing_any = true
+disallow_untyped_decorators = true
+disallow_any_generics = true
+disallow_any_unimported = true
+disallow_any_decorated = true
+disallow_any_explicit = true
+
+[tool.coverage.run]
+branch = true
+omit = [
+    "*__init__.py*",
+    "*__main__.py*"
+]
+
+[tool.coverage.report]
+show_missing = true
+sort = "Miss"
+precision = 2
+exclude_lines = [
+    "logging.info",
+    "logging.debug",
+    "logging.warn",
+    "logging.error"
+]
+
+[tool.coverage.paths]
+source = ["aiopytesseract/"]
+
+[tool.coverage.html]
+directory = "."
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+[tool.ruff]
+# https://docs.astral.sh/ruff/settings/
+target-version = "py310"
+line-length = 88
+indent-width = 4
+unsafe-fixes = false
+
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".venv",
+    ".vscode",
+    "__pycache__",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+    "*.pyc",
+]
+
+[tool.ruff.lint]
+# https://docs.astral.sh/ruff/rules/
+select = [
+    "A",     # flake8-builtins - prevent using keywords that clobber python builtins
+    "B",     # flake8-bugbear - find likely bugs and design problems
+    "C4",    # flake8-comprehensions - better list/set/dict comprehensions
+    "E",     # pycodestyle errors
+    "F",     # pyflakes - undefined names, unused imports
+    "I",     # isort - import sorting
+    "N",     # pep8-naming - naming conventions
+    "PERF",  # perflint - performance anti-patterns
+    "PIE",   # flake8-pie - misc lints
+    "PTH",   # flake8-use-pathlib - use pathlib instead of os.path
+    "RET",   # flake8-return - improve return statements
+    "RUF",   # ruff-specific rules
+    "S",     # flake8-bandit - security testing
+    "SIM",   # flake8-simplify - simplify code
+    "UP",    # pyupgrade - upgrade syntax for newer python versions
+    "W",     # pycodestyle warnings
+]
+
+ignore = [
+    "E501",   # line-too-long (handled by formatter)
+    "N818",   # Exception name should be named with an Error suffix
+]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+# Tests can use magic values, assertions, and relative imports
+"tests/**/*" = [
+    "S101",     # assert-used
+]
+
+[tool.ruff.lint.flake8-bandit]
+check-typed-exception = true
+
+
+[tool.ruff.lint.isort]
+case-sensitive = false
+split-on-trailing-comma = true
+force-single-line = false
+known-first-party = ["aiopytesseract"]
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+[build-system]
+requires = ["flit_core>=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.module]
+name = "aiopytesseract"

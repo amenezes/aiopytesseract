@@ -1,10 +1,13 @@
-from dataclasses import dataclass
+from attrs import frozen
 
 
-@dataclass(frozen=True)
+@frozen
 class Box:
     character: str
     x: int
     y: int
     w: int
     h: int
+
+    def __str__(self) -> str:
+        return self.character

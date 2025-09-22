@@ -1,17 +1,16 @@
 import asyncio
 import re
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from functools import singledispatch
 from pathlib import Path
-from typing import Any, AsyncGenerator, List, Tuple, Union
 
 import cattr
 from aiofiles import tempfile
 
-from aiopytesseract.validators import file_exists
-
-from .base_command import execute, execute_cmd, execute_multi_output_cmd
-from .constants import (
+from aiopytesseract._logger import logger
+from aiopytesseract.base_command import execute, execute_cmd, execute_multi_output_cmd
+from aiopytesseract.constants import (
     AIOPYTESSERACT_DEFAULT_DPI,
     AIOPYTESSERACT_DEFAULT_ENCODING,
     AIOPYTESSERACT_DEFAULT_LANGUAGE,
@@ -20,15 +19,16 @@ from .constants import (
     AIOPYTESSERACT_DEFAULT_TIMEOUT,
     TESSERACT_LANGUAGES,
 )
-from .exceptions import TesseractRuntimeError, TesseractTimeoutError
-from .file_format import FileFormat
-from .models import OSD, Box, Data, Parameter
-from .returncode import ReturnCode
+from aiopytesseract.exceptions import TesseractRuntimeError, TesseractTimeoutError
+from aiopytesseract.file_format import FileFormat
+from aiopytesseract.models import OSD, Box, Data, Parameter
+from aiopytesseract.returncode import ReturnCode
+from aiopytesseract.validators import file_exists
 
 
 async def languages(
     config: str = "", encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING
-) -> List[str]:
+) -> list[str]:
     """Tesseract available languages.
 
     :param config: config. (valid values: str, default: "")
@@ -46,14 +46,13 @@ async def languages(
 
 async def get_languages(
     config: str = "", encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING
-) -> List[str]:
+) -> list[str]:
     """Tesseract available languages.
 
     :param config: config. (valid values: str, default: "")
     :param encoding: decode bytes to string. (default: utf-8)
     """
-    langs = await languages(config, encoding=encoding)
-    return langs
+    return await languages(config, encoding=encoding)
 
 
 async def tesseract_version(encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING) -> str:
@@ -71,8 +70,7 @@ async def get_tesseract_version(encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING)
 
     :param encoding: decode bytes to string. (default: utf-8)
     """
-    version = await tesseract_version(encoding)
-    return version
+    return await tesseract_version(encoding)
 
 
 async def confidence(
@@ -80,7 +78,7 @@ async def confidence(
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
-    tessdata_dir: Union[None, str] = None,
+    tessdata_dir: str | None = None,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> float:
@@ -95,6 +93,7 @@ async def confidence(
     :param encoding: decode bytes to string. (default: utf-8)
     """
     cmdline = f"stdin stdout -l {lang} --dpi {dpi} --psm 0 --oem {oem}"
+    proc = None
     if tessdata_dir:
         cmdline = f"--tessdata-dir {tessdata_dir} {cmdline}"
     try:
@@ -109,8 +108,9 @@ async def confidence(
             ).group(2)
         )
     except asyncio.TimeoutError:
-        proc.kill()
-        raise TesseractTimeoutError()
+        if proc is not None:
+            proc.kill()
+        raise TesseractTimeoutError(timeout) from None
     except AttributeError:
         confidence_value = 0.0
     return confidence_value
@@ -121,7 +121,7 @@ async def deskew(
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
-    tessdata_dir: Union[None, str] = None,
+    tessdata_dir: str | None = None,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> float:
@@ -136,6 +136,7 @@ async def deskew(
     :param encoding: decode bytes to string. (default: utf-8)
     """
     cmdline = f"{image} stdout -l {lang} --dpi {dpi} --psm 2 --oem {oem}"
+    proc = None
     if tessdata_dir:
         cmdline = f"--tessdata-dir {tessdata_dir} {cmdline}"
     try:
@@ -148,8 +149,9 @@ async def deskew(
             ).group(2)
         )
     except asyncio.TimeoutError:
-        proc.kill()
-        raise TesseractTimeoutError()
+        if proc is not None:
+            proc.kill()
+        raise TesseractTimeoutError(timeout) from None
     except AttributeError:
         deskew_value = 0.0
     return deskew_value
@@ -157,8 +159,8 @@ async def deskew(
 
 async def tesseract_parameters(
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
-) -> List[Parameter]:
-    """List of all Tesseract parameters with default value and short description.
+) -> list[Parameter]:
+    """list of all Tesseract parameters with default value and short description.
 
     - reference: https://tesseract-ocr.github.io/tessdoc/tess3/ControlParams.html
 
@@ -174,7 +176,8 @@ async def tesseract_parameters(
         if param:
             params.append(
                 cattr.structure_attrs_fromtuple(
-                    [param.group(1), param.group(3), param.group(2)], Parameter  # type: ignore
+                    (param.group(1), param.group(3), param.group(2)),
+                    Parameter,
                 )
             )
         else:
@@ -182,7 +185,8 @@ async def tesseract_parameters(
             if param:
                 params.append(
                     cattr.structure_attrs_fromtuple(
-                        [param.group(1), param.group(2)], Parameter  # type: ignore
+                        (param.group(1), param.group(2)),
+                        Parameter,
                     )
                 )
     return sorted(params, key=lambda p: p.name)
@@ -190,17 +194,17 @@ async def tesseract_parameters(
 
 @singledispatch
 async def image_to_string(
-    image: Any,
+    image: str | bytes,
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-    user_words: Union[None, str] = None,
-    user_patterns: Union[None, str] = None,
-    tessdata_dir: Union[None, str] = None,
-    config: Union[None, List[Tuple[str, str]]] = None,
+    user_words: str | None = None,
+    user_patterns: str | None = None,
+    tessdata_dir: str | None = None,
+    config: list[tuple[str, str]] | None = None,
 ) -> str:
     """Extract string from an image.
 
@@ -228,10 +232,10 @@ async def _(
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-    user_words: Union[None, str] = None,
-    user_patterns: Union[None, str] = None,
-    tessdata_dir: Union[None, str] = None,
-    config: Union[None, List[Tuple[str, str]]] = None,
+    user_words: str | None = None,
+    user_patterns: str | None = None,
+    tessdata_dir: str | None = None,
+    config: list[tuple[str, str]] | None = None,
 ) -> str:
     image_text: bytes = await execute(
         image,
@@ -258,10 +262,10 @@ async def _(
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-    user_words: Union[None, str] = None,
-    user_patterns: Union[None, str] = None,
-    tessdata_dir: Union[None, str] = None,
-    config: Union[None, List[Tuple[str, str]]] = None,
+    user_words: str | None = None,
+    user_patterns: str | None = None,
+    tessdata_dir: str | None = None,
+    config: list[tuple[str, str]] | None = None,
 ) -> str:
     image_text: bytes = await execute(
         image,
@@ -281,10 +285,10 @@ async def _(
 
 @singledispatch
 async def image_to_hocr(
-    image: Any,
-    user_words: Union[None, str] = None,
-    user_patterns: Union[None, str] = None,
-    tessdata_dir: Union[None, str] = None,
+    image: str | bytes,
+    user_words: str | None = None,
+    user_patterns: str | None = None,
+    tessdata_dir: str | None = None,
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
@@ -303,15 +307,15 @@ async def image_to_hocr(
     :param oem: ocr engine modes (default: 3)
     :param timeout: command timeout (default: 30)
     """
-    raise NotImplementedError
+    raise NotImplementedError(f"Type {type(image)} not supported.")
 
 
 @image_to_hocr.register(str)
 async def _(
     image: str,
-    user_words: Union[None, str] = None,
-    user_patterns: Union[None, str] = None,
-    tessdata_dir: Union[None, str] = None,
+    user_words: str | None = None,
+    user_patterns: str | None = None,
+    tessdata_dir: str | None = None,
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
@@ -342,9 +346,9 @@ async def _(
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-    user_words: Union[None, str] = None,
-    user_patterns: Union[None, str] = None,
-    tessdata_dir: Union[None, str] = None,
+    user_words: str | None = None,
+    user_patterns: str | None = None,
+    tessdata_dir: str | None = None,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> str:
     output: bytes = await execute(
@@ -364,15 +368,15 @@ async def _(
 
 @singledispatch
 async def image_to_pdf(
-    image: Any,
+    image: str | bytes,
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-    user_words: Union[None, str] = None,
-    user_patterns: Union[None, str] = None,
-    tessdata_dir: Union[None, str] = None,
+    user_words: str | None = None,
+    user_patterns: str | None = None,
+    tessdata_dir: str | None = None,
 ) -> bytes:
     """Generate a searchable PDF from an image.
 
@@ -386,7 +390,7 @@ async def image_to_pdf(
     :param user_patterns: location of user patterns file. (default: None)
     :param tessdata_dir: location of tessdata path. (default: None)
     """
-    raise NotImplementedError
+    raise NotImplementedError(f"Type {type(image)} not supported.")
 
 
 @image_to_pdf.register(str)
@@ -397,9 +401,9 @@ async def _(
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-    user_words: Union[None, str] = None,
-    user_patterns: Union[None, str] = None,
-    tessdata_dir: Union[None, str] = None,
+    user_words: str | None = None,
+    user_patterns: str | None = None,
+    tessdata_dir: str | None = None,
 ) -> bytes:
     output: bytes = await execute(
         image,
@@ -424,9 +428,9 @@ async def _(
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-    user_words: Union[None, str] = None,
-    user_patterns: Union[None, str] = None,
-    tessdata_dir: Union[None, str] = None,
+    user_words: str | None = None,
+    user_patterns: str | None = None,
+    tessdata_dir: str | None = None,
 ) -> bytes:
     output: bytes = await execute(
         image,
@@ -445,12 +449,12 @@ async def _(
 
 @singledispatch
 async def image_to_boxes(
-    image: Any,
+    image: str | bytes,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
-    tessdata_dir: Union[None, str] = None,
+    tessdata_dir: str | None = None,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
-) -> List[Box]:
+) -> list[Box]:
     """Bounding box estimates.
 
     :param image: image input to tesseract. (valid values: str, bytes)
@@ -459,64 +463,66 @@ async def image_to_boxes(
     :param timeout: command timeout (default: 30)
     :param encoding: decode bytes to string. (default: utf-8)
     """
-    raise NotImplementedError
+    raise NotImplementedError(f"Type {type(image)} not supported.")
 
 
 @image_to_boxes.register(str)
 async def _(
     image: str,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
-    tessdata_dir: Union[None, str] = None,
+    tessdata_dir: str | None = None,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
-) -> List[Box]:
+) -> list[Box]:
     await file_exists(image)
-    boxes = await image_to_boxes(
+    return await image_to_boxes(
         Path(image).read_bytes(), lang, tessdata_dir, timeout, encoding
     )
-    return boxes
 
 
 @image_to_boxes.register(bytes)
 async def _(
-    image: str,
+    image: bytes,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
-    tessdata_dir: Union[None, str] = None,
+    tessdata_dir: str | None = None,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
-) -> List[Box]:
+) -> list[Box]:
     cmdline = f"-l {lang} stdin stdout batch.nochop makebox"
+    proc = None
     if tessdata_dir:
         cmdline = f"--tessdata-dir {tessdata_dir} {cmdline}"
-    print(cmdline)
+    logger.debug(f"Executing tesseract command: {cmdline}")
     try:
         proc = await execute_cmd(cmdline)
         stdout, stderr = await asyncio.wait_for(
-            proc.communicate(image), timeout=timeout  # type: ignore
+            proc.communicate(image),
+            timeout=timeout,
         )
     except asyncio.TimeoutError:
-        proc.kill()
-        raise TesseractTimeoutError()
+        if proc is not None:
+            proc.kill()
+        raise TesseractTimeoutError(timeout) from None
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))
     data = stdout.decode(encoding)
     datalen = len(data.split("\n")) - 1
-    boxes = []
-    for line in data.split("\n")[:datalen]:
-        boxes.append(cattr.structure_attrs_fromtuple(tuple(line.split()), Box))
-    return boxes
+    return [
+        cattr.structure_attrs_fromtuple(tuple(line.split()), Box)
+        for line in data.split("\n")[:datalen]
+    ]
 
 
 @singledispatch
 async def image_to_data(
-    image: Any,
+    image: str | bytes,
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
-    tessdata_dir: Union[None, str] = None,
+    tessdata_dir: str | None = None,
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
-) -> List[Data]:
+) -> list[Data]:
     """Information about boxes, confidences, line and page numbers.
 
     :param image: image input to tesseract. (valid values: str, bytes)
@@ -527,7 +533,7 @@ async def image_to_data(
     :param tessdata_dir: location of tessdata path. (default: None)
     :param psm: page segmentation modes. (default: 3)
     """
-    raise NotImplementedError
+    raise NotImplementedError(f"Type {type(image)} not supported.")
 
 
 @image_to_data.register(str)
@@ -537,14 +543,13 @@ async def _(
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
-    tessdata_dir: Union[None, str] = None,
+    tessdata_dir: str | None = None,
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
-) -> List[Data]:
+) -> list[Data]:
     await file_exists(image)
-    data_values = await image_to_data(
+    return await image_to_data(
         Path(image).read_bytes(), dpi, lang, timeout, encoding, tessdata_dir, psm
     )
-    return data_values
 
 
 @image_to_data.register(bytes)
@@ -554,10 +559,11 @@ async def _(
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
-    tessdata_dir: Union[None, str] = None,
+    tessdata_dir: str | None = None,
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
-) -> List[Data]:
+) -> list[Data]:
     cmdline = f"stdin stdout -c tessedit_create_tsv=1 --dpi {dpi} -l {lang} --psm {psm}"
+    proc = None
     if tessdata_dir:
         cmdline = f"--tessdata-dir {tessdata_dir} {cmdline}"
     try:
@@ -566,8 +572,9 @@ async def _(
             proc.communicate(image), timeout=timeout
         )
     except asyncio.TimeoutError:
-        proc.kill()
-        raise TesseractTimeoutError()
+        if proc is not None:
+            proc.kill()
+        raise TesseractTimeoutError(timeout) from None
     if proc.returncode != ReturnCode.SUCCESS:
         raise TesseractRuntimeError(stderr.decode(encoding))
     data: str = stdout.decode(encoding)
@@ -581,13 +588,13 @@ async def _(
 
 @singledispatch
 async def image_to_osd(
-    image: Any,
+    image: str | bytes,
     dpi: int = AIOPYTESSERACT_DEFAULT_DPI,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
-    tessdata_dir: Union[None, str] = None,
+    tessdata_dir: str | None = None,
 ) -> OSD:
     """Information about orientation and script detection.
 
@@ -599,7 +606,7 @@ async def image_to_osd(
     :param encoding: decode bytes to string. (default: utf-8)
     :param tessdata_dir: location of tessdata path. (default: None)
     """
-    raise NotImplementedError
+    raise NotImplementedError(f"Type {type(image)} not supported.")
 
 
 @image_to_osd.register(str)
@@ -610,13 +617,12 @@ async def _(
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
-    tessdata_dir: Union[None, str] = None,
+    tessdata_dir: str | None = None,
 ) -> OSD:
     await file_exists(image)
-    osd = await image_to_osd(
+    return await image_to_osd(
         Path(image).read_bytes(), dpi, oem, lang, timeout, encoding, tessdata_dir
     )
-    return osd
 
 
 @image_to_osd.register(bytes)
@@ -627,26 +633,37 @@ async def _(
     lang: str = AIOPYTESSERACT_DEFAULT_LANGUAGE,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
-    tessdata_dir: Union[None, str] = None,
+    tessdata_dir: str | None = None,
 ) -> OSD:
-    data = await execute(
-        image,
-        output_format=FileFormat.OSD,
-        lang=lang,
-        dpi=dpi,
-        psm=0,
-        oem=oem,
-        timeout=timeout,
-        tessdata_dir=tessdata_dir,
-    )
-    osd = cattr.structure_attrs_fromtuple(
+    # OSD requires legacy engine, force OEM to 0 (legacy only) if default is used
+    osd_oem = 0 if oem == AIOPYTESSERACT_DEFAULT_OEM else oem
+    try:
+        data = await execute(
+            image,
+            output_format=FileFormat.OSD,
+            lang=lang,
+            dpi=dpi,
+            psm=0,  # PSM 0 is required for OSD only
+            oem=osd_oem,
+            timeout=timeout,
+            tessdata_dir=tessdata_dir,
+        )
+    except TesseractRuntimeError as e:
+        if "OSD requires a model for the legacy engine" in str(
+            e
+        ) or "Can't open osd" in str(e):
+            raise TesseractRuntimeError(
+                "OSD (Orientation and Script Detection) requires legacy engine support. "
+                "Please ensure your Tesseract installation includes legacy trained data files."
+            ) from e
+        raise
+    return cattr.structure_attrs_fromtuple(
         re.findall(  # type: ignore
             r"\w+\s?:\s*(\d+.?\d*|\w+)",
             data.decode(encoding),
         ),
         OSD,
     )
-    return osd
 
 
 @asynccontextmanager
@@ -659,12 +676,12 @@ async def run(
     psm: int = AIOPYTESSERACT_DEFAULT_PSM,
     oem: int = AIOPYTESSERACT_DEFAULT_OEM,
     timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT,
-    user_words: Union[None, str] = None,
-    user_patterns: Union[None, str] = None,
-    tessdata_dir: Union[None, str] = None,
-    config: Union[None, List[Tuple[str, str]]] = None,
+    user_words: str | None = None,
+    user_patterns: str | None = None,
+    tessdata_dir: str | None = None,
+    config: list[tuple[str, str]] | None = None,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
-) -> AsyncGenerator[Tuple[str, ...], None]:
+) -> AsyncGenerator[tuple[str, ...], None]:
     """Run Tesseract-OCR with multiple analysis.
 
     This function allow run Tesseract with multiple output format with
@@ -687,7 +704,7 @@ async def run(
     :param encoding: decode bytes to string. (default: utf-8)
     """
     if not isinstance(image, bytes):
-        raise NotImplementedError
+        raise NotImplementedError(f"Type {type(image)} not supported.")
     async with tempfile.TemporaryDirectory(prefix="aiopytesseract-") as tmpdir:
         resp = await execute_multi_output_cmd(
             image,

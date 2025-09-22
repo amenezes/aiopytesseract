@@ -1,4 +1,3 @@
-version: "3"
 services:
   aiopytesseract:
     container_name: aiopytesseract

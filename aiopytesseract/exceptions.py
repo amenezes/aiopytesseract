@@ -1,39 +1,71 @@
 class TesseractError(Exception):
-    """Base exception for tesseract"""
-
     def __init__(self, message: str = "Tesseract Error") -> None:
         self.message = message
-
-    def __str__(self) -> str:
-        return self.message
+        super().__init__(self.message)
 
 
 class PSMInvalidException(TesseractError):
-    def __init__(
-        self, message: str = "PSM value must be in the range [0 - 13]"
-    ) -> None:
+    def __init__(self, psm_value: int) -> None:
+        message = f"PSM value must be in the range [0-13], got: {psm_value}"
         super().__init__(message)
 
 
 class OEMInvalidException(TesseractError):
-    def __init__(self, message: str = "OEM value must be in the range [0 - 3]") -> None:
+    def __init__(self, oem_value: int) -> None:
+        message = f"OEM value must be in the range [0-3], got: {oem_value}"
         super().__init__(message)
 
 
 class NoSuchFileException(TesseractError):
-    def __init__(self, message: str = "No such file") -> None:
+    def __init__(self, file_path: str) -> None:
+        message = f"No such file: '{file_path}'"
         super().__init__(message)
 
 
 class LanguageInvalidException(TesseractError):
-    def __init__(self, message: str = "Language invalid") -> None:
+    def __init__(
+        self, language: str, available_languages: list[str] | None = None
+    ) -> None:
+        if available_languages:
+            available = ", ".join(available_languages[:5])
+            ellipsis = "..." if len(available_languages) > 5 else ""
+            message = (
+                f"Language '{language}' is invalid. Available: {available}{ellipsis}"
+            )
+        else:
+            message = f"Language '{language}' is invalid"
         super().__init__(message)
 
 
 class TesseractRuntimeError(TesseractError):
-    pass
+    def __init__(self, stderr_output: str = "") -> None:
+        message = (
+            f"Tesseract process failed: {stderr_output}"
+            if stderr_output
+            else "Tesseract process failed"
+        )
+        super().__init__(message)
 
 
-class TesseractTimeoutError(TesseractRuntimeError):
-    def __init__(self, message: str = "Tesseract process timeout") -> None:
+class TesseractTimeoutError(TesseractError):
+    def __init__(self, timeout: float | None = None) -> None:
+        message = (
+            f"Tesseract process timeout after {timeout}s"
+            if timeout
+            else "Tesseract process timeout"
+        )
+        super().__init__(message)
+
+
+class TesseractNotFoundError(TesseractError):
+    def __init__(self) -> None:
+        message = "Tesseract binary not found. Please install tesseract-ocr"
+        super().__init__(message)
+
+
+class ImageFormatError(TesseractError):
+    def __init__(self, image_type: type) -> None:
+        message = (
+            f"Image type '{image_type.__name__}' is not supported. Use str or bytes"
+        )
         super().__init__(message)
