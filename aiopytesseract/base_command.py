@@ -58,7 +58,7 @@ async def execute(
     config: list[tuple[str, str]] | None = None,
     encoding: str = AIOPYTESSERACT_DEFAULT_ENCODING,
 ) -> bytes:
-    raise NotImplementedError
+    raise NotImplementedError(f"Type {type(image)} not supported.")
 
 
 @execute.register(str)

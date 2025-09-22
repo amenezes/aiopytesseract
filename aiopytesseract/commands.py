@@ -307,7 +307,7 @@ async def image_to_hocr(
     :param oem: ocr engine modes (default: 3)
     :param timeout: command timeout (default: 30)
     """
-    raise NotImplementedError
+    raise NotImplementedError(f"Type {type(image)} not supported.")
 
 
 @image_to_hocr.register(str)
@@ -390,7 +390,7 @@ async def image_to_pdf(
     :param user_patterns: location of user patterns file. (default: None)
     :param tessdata_dir: location of tessdata path. (default: None)
     """
-    raise NotImplementedError
+    raise NotImplementedError(f"Type {type(image)} not supported.")
 
 
 @image_to_pdf.register(str)
@@ -463,7 +463,7 @@ async def image_to_boxes(
     :param timeout: command timeout (default: 30)
     :param encoding: decode bytes to string. (default: utf-8)
     """
-    raise NotImplementedError
+    raise NotImplementedError(f"Type {type(image)} not supported.")
 
 
 @image_to_boxes.register(str)
@@ -533,7 +533,7 @@ async def image_to_data(
     :param tessdata_dir: location of tessdata path. (default: None)
     :param psm: page segmentation modes. (default: 3)
     """
-    raise NotImplementedError
+    raise NotImplementedError(f"Type {type(image)} not supported.")
 
 
 @image_to_data.register(str)
@@ -606,7 +606,7 @@ async def image_to_osd(
     :param encoding: decode bytes to string. (default: utf-8)
     :param tessdata_dir: location of tessdata path. (default: None)
     """
-    raise NotImplementedError
+    raise NotImplementedError(f"Type {type(image)} not supported.")
 
 
 @image_to_osd.register(str)
@@ -704,7 +704,7 @@ async def run(
     :param encoding: decode bytes to string. (default: utf-8)
     """
     if not isinstance(image, bytes):
-        raise NotImplementedError
+        raise NotImplementedError(f"Type {type(image)} not supported.")
     async with tempfile.TemporaryDirectory(prefix="aiopytesseract-") as tmpdir:
         resp = await execute_multi_output_cmd(
             image,
