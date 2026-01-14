@@ -16,7 +16,7 @@ from aiopytesseract.commands import (
 )
 from aiopytesseract.models import OSD, Box, Data, Parameter
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __all__ = [
     "OSD",
     "Box",
