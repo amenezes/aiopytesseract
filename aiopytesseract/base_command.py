@@ -12,7 +12,7 @@ from aiopytesseract.constants import (
     AIOPYTESSERACT_DEFAULT_ENCODING,
     AIOPYTESSERACT_DEFAULT_TIMEOUT,
     OUTPUT_FILE_EXTENSIONS,
-    TESSERACT_CMD
+    TESSERACT_CMD,
 )
 from aiopytesseract.exceptions import TesseractRuntimeError, TesseractTimeoutError
 from aiopytesseract.returncode import ReturnCode
@@ -25,8 +25,7 @@ from aiopytesseract.validators import (
 
 
 async def execute_cmd(
-    cmd_args: str,
-    timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT
+    cmd_args: str, timeout: float = AIOPYTESSERACT_DEFAULT_TIMEOUT
 ) -> Process:
     logger.debug(
         f"aiopytesseract command: '{TESSERACT_CMD} {shlex.join(shlex.split(cmd_args))}'"
